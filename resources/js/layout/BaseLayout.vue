@@ -1,10 +1,7 @@
-<script setup>
-import Navbar from '@/components/Navbar.vue';
-</script>
+<script setup></script>
 
 <template>
-     <Navbar />
-    <div class="h-screen w-screen overflow-x-hidden overflow-y-auto bg-gray-50 flex justify-center p-4">
+    <div class="">
         <slot />
     </div>
 </template>
