@@ -30,16 +30,23 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('doctors', function (Blueprint $table) {
-            $table->foreignId('profile_id')->nullable()->constrained('profiles')->cascadeOnDelete();
-        });
+        if (Schema::hasTable('doctors')) {
+            Schema::table('doctors', function (Blueprint $table) {
+                $table->foreignId('profile_id')->nullable()->constrained('profiles')->cascadeOnDelete();
+            });
+        }
 
-        Schema::table('staffs', function (Blueprint $table) {
-            $table->foreignId('profile_id')->nullable()->constrained('profiles')->cascadeOnDelete();
-        });
+        if (Schema::hasTable('staffs')) {
+            Schema::table('staffs', function (Blueprint $table) {
+                $table->foreignId('profile_id')->nullable()->constrained('profiles')->cascadeOnDelete();
+            });
+        }
 
-        Schema::table('patients', function (Blueprint $table) {
-            $table->foreignId('profile_id')->nullable()->constrained('profiles')->cascadeOnDelete();
-        });
+        if (Schema::hasTable('patients')) {
+            Schema::table('patients', function (Blueprint $table) {
+                $table->foreignId('profile_id')->nullable()->constrained('profiles')->cascadeOnDelete();
+            });
+        }
+
     }
 };

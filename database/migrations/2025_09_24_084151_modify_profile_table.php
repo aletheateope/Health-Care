@@ -11,16 +11,15 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::disableForeignKeyConstraints();
-
+        Schema::dropIfExists('profiles');
+        Schema::dropIfExists('patients');
         Schema::dropIfExists('doctors');
         Schema::dropIfExists('staffs');
-        Schema::dropIfExists('patients');
-        Schema::dropIfExists('profiles');
-
         Schema::enableForeignKeyConstraints();
 
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('first_name');
             $table->string('middle_name');
             $table->string('last_name');
@@ -31,35 +30,32 @@ return new class extends Migration {
             $table->timestamps();
         });
 
+        Schema::create('patients', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('profile_id')->constrained()->cascadeOnDelete();
+            $table->text('medical_history');
+            $table->timestamps();
+        });
+
+
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullableOnDelete();
             $table->foreignId('profile_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('specialty_id')->nullable()->constrained()->nullableOnDelete();
+            $table->foreignId('doctor_specialty_id')->nullable()->constrained()->nullableOnDelete();
             $table->string('license_number');
             $table->string('room_number');
             $table->string('clinic_phone_number');
             $table->string('doctor_note');
             $table->timestamps();
-
-        });
-
-        Schema::create('patients', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('profile_id')->constrained()->cascadeOnDelete();
-            $table->text('medical_history');
-            $table->timestamps();
-
         });
 
         Schema::create('staffs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('profile_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
-
         });
+
+
     }
 
     /**
@@ -68,11 +64,10 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('profiles');
+        Schema::dropIfExists('patients');
         Schema::dropIfExists('doctors');
         Schema::dropIfExists('staffs');
-        Schema::dropIfExists('patients');
-        Schema::dropIfExists('profiles');
         Schema::enableForeignKeyConstraints();
-
     }
 };

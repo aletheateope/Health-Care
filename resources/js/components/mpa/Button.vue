@@ -16,5 +16,5 @@ const props = defineProps({
 </script>
 
 <template>
-    <Button v-bind="props" :class="props.class" />
+    <Button v-bind="props" :class="class" />
 </template>

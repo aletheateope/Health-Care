@@ -10,6 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('conversations_messages');
+        Schema::dropIfExists('conversation_participants');
+        Schema::dropIfExists('conversations');
+        Schema::enableForeignKeyConstraints();
+
+
+
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
             $table->date('date_created');
@@ -39,6 +47,11 @@ return new class extends Migration {
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('conversations_messages');
+        Schema::dropIfExists('conversation_participants');
         Schema::dropIfExists('conversations');
+        Schema::enableForeignKeyConstraints();
+
     }
 };

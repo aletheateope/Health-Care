@@ -12,11 +12,12 @@ class Layout extends Component
     /**
      * Create a new component instance.
      */
-
+    public $title;
     public bool $showHero;
 
-    public function __construct(bool $showHero = false)
+    public function __construct(bool $showHero = false, $title = "Document")
     {
+        $this->title = $title;
         $this->showHero = $showHero || Route::is('home');
     }
 

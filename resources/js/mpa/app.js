@@ -4,9 +4,9 @@ import Aura from "@primeuix/themes/aura";
 import { definePreset } from "@primeuix/themes";
 
 import Button from "@/components/mpa/Button.vue";
-import Password from "@/components/mpa/Password.vue";
-import InputText from "@/components/mpa/InputText.vue";
-import Checkbox from "@/components/mpa/CheckBox.vue";
+
+import RegisterForm from "@/components/mpa/RegisterForm.vue";
+import LoginForm from "@/components/mpa/LoginForm.vue";
 
 const MyPreset = definePreset(Aura, {
     semantic: {
@@ -28,27 +28,25 @@ const MyPreset = definePreset(Aura, {
 
 const components = {
     Button,
-    Password,
-    InputText,
-    Checkbox,
+    RegisterForm,
+    LoginForm,
 };
 
 document.querySelectorAll("[data-vue]").forEach((el) => {
     const name = el.dataset.vue;
     const Component = components[name];
-    if (!Component) return; // skip if not registered
+    if (!Component) return;
 
-    // Extract props from data-*
     const props = {};
     for (const key in el.dataset) {
-        if (key === "vue") continue; // skip the component name
+        if (key === "vue") continue;
         const camelKey = key.replace(/-([a-z])/g, (_, char) =>
             char.toUpperCase()
         );
+
         props[camelKey] = el.dataset[key];
     }
 
-    // Mount the Vue component
     const app = createApp(Component, props);
     app.use(PrimeVue, { theme: { preset: MyPreset } });
     app.mount(el);

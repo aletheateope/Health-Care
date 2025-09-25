@@ -10,12 +10,18 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('services', function (Blueprint $table) {
+        Schema::dropIfExists('users');
+
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_catery_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->enum('role', ['admin','patient', 'doctor', 'staff'])->default('patient');
+            $table->string('password');
+            $table->rememberToken();
             $table->timestamps();
         });
+
     }
 
     /**
@@ -23,9 +29,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('services');
-        Schema::enableForeignKeyConstraints();
-
+        Schema::dropIfExists('users');
     }
 };

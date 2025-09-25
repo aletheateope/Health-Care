@@ -8,17 +8,12 @@ class Doctor extends Model
 {
     protected $fillable = [
         'user_id',
-        'specialty_id',
+        'doctor_specialty_id',
         'license_number',
         'room_number',
         'clinic_phone_number',
         'doctor_note',
     ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 
     public function profile()
     {

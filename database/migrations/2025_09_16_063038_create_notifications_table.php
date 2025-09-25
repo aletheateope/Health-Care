@@ -10,6 +10,20 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('notification_types');
+        Schema::enableForeignKeyConstraints();
+
+
+        Schema::create('notification_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('description');
+            $table->timestamps();
+        });
+
+
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('recipient_id')->constrained('users')->cascadeOnDelete();
@@ -19,14 +33,6 @@ return new class extends Migration {
             $table->boolean('seen')->default(false);
             $table->timestamps();
         });
-
-        Schema::create('notification_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->timestamps();
-        });
-
     }
 
     /**
@@ -34,6 +40,10 @@ return new class extends Migration {
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('notifications');
+        Schema::dropIfExists('notification_types');
+        Schema::enableForeignKeyConstraints();
+
     }
 };
