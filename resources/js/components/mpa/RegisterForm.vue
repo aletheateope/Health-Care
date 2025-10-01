@@ -4,9 +4,10 @@ import axios from "axios";
 
 import * as yup from "yup";
 
+import Button from "primevue/button";
+
 import { Form, FormField } from "@primevue/forms";
 import Message from "primevue/message";
-
 import FloatLabel from "primevue/floatlabel";
 import InputText from "primevue/inputtext";
 import RadioButtonGroup from "primevue/radiobuttongroup";
@@ -14,19 +15,8 @@ import RadioButton from "primevue/radiobutton";
 import Password from "primevue/password";
 import InputMask from "primevue/inputmask";
 import DatePicker from "primevue/datepicker";
-import Button from "primevue/button";
 
-const initialValues = {
-    first_name: "",
-    middle_name: "",
-    last_name: "",
-    date_of_birth: "",
-    phone_number: "",
-    gender: "male",
-    email: "",
-    password: "",
-    password_confirmation: "",
-};
+import { userInitialValues } from "@/utils/form-initial-values";
 
 // const schema = yup.object({
 //     email: yup.string().email("Please enter a valid email address."),
@@ -57,6 +47,7 @@ async function onSubmit({ values }) {
     } catch (error) {
         if (error.response && error.response.status === 422) {
             errors.value = error.response.data.errors;
+            console.log(errors.value);
         }
     }
 }
@@ -67,7 +58,7 @@ function clearError(field) {
 </script>
 
 <template>
-    <Form :initialValues="initialValues" @submit="onSubmit">
+    <Form :initialValues="userInitialValues" @submit="onSubmit">
         <div
             class="flex flex-col rounded-md border border-color shadow-md py-10 px-24 w-200 gap-12 items-center"
         >

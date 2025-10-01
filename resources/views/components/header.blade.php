@@ -20,7 +20,7 @@ $links = [
             $isActive = request()->is(ltrim($link['path'], '/')) || ($link['path'] === '/' && request()->is('/'));
             @endphp
             <li>
-                <div class="flex {{ $isActive ? 'border-b-2 bold accent-color' : '' }}">
+                <div class="flex {{ $isActive ? 'border-b-2 font-bold accent-color' : '' }}">
                     <a href="{{ $link['path'] }}" class="py-2">
                         {{ $link['name'] }}
                     </a>

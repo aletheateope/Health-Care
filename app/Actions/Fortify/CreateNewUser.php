@@ -28,6 +28,7 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
+            'role' => ['sometimes', Rule::in(['admin', 'doctor', 'staff', 'patient'])],
             'first_name' => ['required', 'string', 'max:255'],
             'middle_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
@@ -39,6 +40,7 @@ class CreateNewUser implements CreatesNewUsers
         $user =  User::create([
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'role' => $input['role'] ?? 'patient',
         ]);
 
         $user->profile()->create([

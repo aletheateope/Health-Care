@@ -1,46 +1,55 @@
 <?php
-
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-route::get('/', function () {
+use App\Http\Controllers\UserController;
+
+Route::get('/', function () {
     return view('home');
 })->name('home');
 
-route::get('/about', function () {
+Route::get('/about', function () {
     return view('about');
 })->name('about');
 
-route::get('/services', function () {
+Route::get('/services', function () {
     return view('services');
 })->name('services');
 
-route::get('/doctor', function () {
+Route::get('/doctor', function () {
     return view('doctor');
 })->name('doctor');
 
-route::get('/contact', function () {
+Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
 
-
 Route::get('/login', function () {
     if (Auth::check()) {
-        return redirect('/portal/dashboard');
+        return redirect()->route('portal');
     }
     return view('login');
 })->name('login');
 
 Route::get('/register', function () {
     if (Auth::check()) {
-        return redirect('/portal/dashboard');
+        return redirect()->route('portal');
     }
     return view('register');
 })->name('register');
 
-route::middleware(['auth'])->get('/portal/dashboard', function () {
-    return view('app');
-})->name('portal');
+Route::middleware(['auth'])->prefix('portal')->group(function () {
+    Route::get('/{any?}', function () {
+        return view('app');
+    })->where('any', '.*')->name('portal');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user', [UserController::class, 'currentUser']);
+    Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
+});
 
 Route::get('/force-logout', function () {
     Auth::logout();
@@ -48,3 +57,9 @@ Route::get('/force-logout', function () {
     request()->session()->regenerateToken();
     return redirect('/login');
 });
+
+
+
+// Route::get('/portal/dashboard', function () {
+//     return view('app');
+// })->name('portal');

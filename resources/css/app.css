@@ -5,16 +5,17 @@
 
 :root {
     /* Text-Colors */
-    --primary-text-color: #000000;
+    --primary-text-color: var(--p-slate-900);
+
     --inactive-text: #838383;
     --inactive-text-light: #dddddd;
 
     /* COLORS */
-    --bg-color: var(--p-primary-contrast-color);
+    --bg-color: var(--p-zinc-50);
     --accent-color: var(--p-primary-color);
 
     /* BORDER */
-    --border-color: #f5f5f5;
+    --border-color: var(--p-surface-300);
 
     /* TEXT SIZES */
     --standard-text-size: 1rem;
@@ -27,13 +28,26 @@
     --small-text-size: 0.875rem;
     --extra-small-text-size: 0.75rem;
 
-    /* FONT WEIGHT */
-    --bold: 700;
+    /* PRIMEVUE */
+    --p-button-text-contrast-hover-background: var(--p-slate-100) !important;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --primary-text-color: #ffffff;
+        /* Text-Colors */
+        --primary-text-color: var(--p-slate-200);
+
+        /* COLORS */
+        --bg-color: var(--p-neutral-800);
+
+        /* BORDER */
+        --border-color: var(--p-surface-700);
+
+        /* LIBRARIES */
+        /* PRIMEVUE */
+        --p-button-text-contrast-hover-background: var(
+            --p-slate-700
+        ) !important;
     }
 }
 
@@ -50,6 +64,8 @@
 body {
     font-family: "Open Sans", sans-serif;
     min-height: 100vh;
+    color: var(--primary-text-color);
+    background-color: var(--bg-color);
 }
 
 p,
@@ -101,14 +117,6 @@ small,
     font-size: var(--extra-small-text-size);
 }
 
-.bold {
-    font-weight: var(--bold);
-}
-
-.bg-color {
-    background-color: var(--bg-color);
-}
-
 .border-color {
     border-color: var(--border-color);
 }
@@ -127,6 +135,16 @@ small,
     color: var(--inactive-text-light);
 }
 
+/* BACKGROUND COLORS */
+
+.bg-color {
+    background-color: var(--bg-color);
+}
+
+.bg-accent-color {
+    background-color: var(--accent-color);
+}
+
 /* -- */
 /* Libraries */
 /* -- */
@@ -134,4 +152,12 @@ small,
 /* PrimeVue */
 .p-button {
     position: unset !important;
+}
+
+.p-datepicker-fluid .p-datepicker-input {
+    width: 100% !important;
+}
+
+.p-button-text.p-button-contrast {
+    color: var(--primary-text-color) !important;
 }

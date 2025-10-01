@@ -16,6 +16,6 @@
 
 </head>
 
-<body id="app" class=""></body>
+<body id="app"></body>
 
 </html>

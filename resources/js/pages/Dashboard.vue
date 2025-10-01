@@ -1,5 +1,5 @@
 <script setup></script>
 
 <template>
-    <RouterLink to="/portal/appointments">Appointments</RouterLink>
+    <h1>Dashboard</h1>
 </template>

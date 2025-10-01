@@ -25,6 +25,7 @@ async function onSubmit({ values }) {
     errors.value = {};
     try {
         await axios.post("/login", values);
+
         window.location.href = "/portal/dashboard";
     } catch (error) {
         if (error.response && error.response.status === 422) {
@@ -132,7 +133,7 @@ function clearError(field) {
                 />
                 <Button
                     icon="pi pi-facebook"
-                    label="Google"
+                    label="Facebook"
                     severity="secondary"
                 />
             </div>

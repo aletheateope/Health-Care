@@ -18,7 +18,7 @@
             style="background-image: linear-gradient(rgba(6, 39, 35, 0.5),rgba(20, 184, 166, 0.5)), url('{{ asset('img/hero-section_bg.jpg') }}')"
             class="flex flex-row flex-grow bg-no-repeat bg-left bg-size-[150%] text-white p-24 items-center">
             <div class="flex flex-col flex-1 gap-10">
-                <h1 class="bold">Smarter Healthcare <br> Starts Here</h1>
+                <h1 class="font-bold">Smarter Healthcare <br> Starts Here</h1>
                 <h6>Our healthcare management system helps clinics and hospitals streamline appointments, patient
                     records,
                     and billing in
