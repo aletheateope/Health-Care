@@ -1,13 +1,165 @@
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+:root {
+    /* Text Colors */
+    --primary-text-color: var(--p-slate-900);
+
+    /* Background Colors */
+    --bg-color: var(--p-zinc-50);
+
+    /* Accent Color */
+    --accent-color: var(--p-primary-color);
+
+    /* BORDER */
+    --border-color: var(--p-surface-300);
+
+    /* TEXT SIZES */
+    --standard-text-size: 1rem;
+    --h1: clamp(2.5rem, 0.7143rem + 4.4643vw, 5rem);
+    --h2: 3.625rem;
+    --h3: 2.625rem;
+    --h4: 1.75rem;
+    --h5: 1.375rem;
+    --h6: 1.125rem;
+    --small-text-size: 0.875rem;
+    --xsmall-text-size: 0.75rem;
+
+    /* PRIMEVUE */
+    --p-button-text-contrast-hover-background: var(--p-slate-100) !important;
 }
 
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Text Colors */
+        --primary-text-color: var(--p-slate-200);
 
+        /* Background Colors */
+        --bg-color: var(--p-neutral-800);
+
+        /* BORDER */
+        --border-color: var(--p-surface-700);
+
+        /* LIBRARIES */
+        /* PRIMEVUE */
+        --p-button-text-contrast-hover-background: var(
+            --p-slate-700
+        ) !important;
+    }
+}
+
+/* @media (prefers-color-scheme: light) {
+    :root{
+
+    }
+} */
+
+/* * {
+} */
+
+body {
+    font-family: "Open Sans", sans-serif;
+    min-height: 100vh;
+    color: var(--primary-text-color);
+    background-color: var(--bg-color);
+}
+
+p,
+label,
+input {
+    font-size: var(--standard-text-size);
+}
+
+h1,
+.h1 {
+    font-size: var(--h1);
+}
+
+h2,
+.h2 {
+    font-size: var(--h2);
+}
+
+h3,
+.h3 {
+    font-size: var(--h3);
+}
+
+h4,
+.h4 {
+    font-size: var(--h4);
+}
+
+h5,
+.h5 {
+    font-size: var(--h5);
+}
+
+h6,
+.h6 {
+    font-size: var(--h6);
+}
+
+small,
+.small {
+    font-size: var(--small-text-size);
+}
+
+/* -- */
+/* CUSTOM CLASSES */
+/* -- */
+
+.xsmall {
+    font-size: var(--xsmall-text-size);
+}
+
+.border-color {
+    border-color: var(--border-color);
+}
+
+/* COLORS */
+
+.accent-color {
+    color: var(--accent-color);
+}
+
+.text-color {
+    color: var(--primary-text-color) !important;
+}
+
+/* BACKGROUND COLORS */
+
+.bg-color {
+    background-color: var(--bg-color);
+}
+
+.bg-accent-color {
+    background-color: var(--accent-color);
+}
+
+/* -- */
+/* Libraries */
+/* -- */
+
+/* PrimeVue */
+.p-button {
+    position: unset !important;
+}
+
+.p-datepicker-fluid .p-datepicker-input {
+    width: 100% !important;
+}
+
+.p-button-text.p-button-contrast {
+    color: var(--primary-text-color) !important;
+}
+
+.p-dialog-header {
+    padding-bottom: 10px !important;
+}
+
+.p-dialog-content {
+    padding-top: 10px;
+}
