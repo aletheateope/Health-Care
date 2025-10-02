@@ -4,14 +4,13 @@
 @import "primeicons/primeicons.css";
 
 :root {
-    /* Text-Colors */
+    /* Text Colors */
     --primary-text-color: var(--p-slate-900);
 
-    --inactive-text: #838383;
-    --inactive-text-light: #dddddd;
-
-    /* COLORS */
+    /* Background Colors */
     --bg-color: var(--p-zinc-50);
+
+    /* Accent Color */
     --accent-color: var(--p-primary-color);
 
     /* BORDER */
@@ -26,7 +25,7 @@
     --h5: 1.375rem;
     --h6: 1.125rem;
     --small-text-size: 0.875rem;
-    --extra-small-text-size: 0.75rem;
+    --xsmall-text-size: 0.75rem;
 
     /* PRIMEVUE */
     --p-button-text-contrast-hover-background: var(--p-slate-100) !important;
@@ -34,10 +33,10 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        /* Text-Colors */
+        /* Text Colors */
         --primary-text-color: var(--p-slate-200);
 
-        /* COLORS */
+        /* Background Colors */
         --bg-color: var(--p-neutral-800);
 
         /* BORDER */
@@ -58,7 +57,6 @@
 } */
 
 /* * {
-    color: var(--primary-text-color);
 } */
 
 body {
@@ -113,8 +111,8 @@ small,
 /* CUSTOM CLASSES */
 /* -- */
 
-.extra-small {
-    font-size: var(--extra-small-text-size);
+.xsmall {
+    font-size: var(--xsmall-text-size);
 }
 
 .border-color {
@@ -129,10 +127,6 @@ small,
 
 .text-color {
     color: var(--primary-text-color) !important;
-}
-
-.inactive-text-light {
-    color: var(--inactive-text-light);
 }
 
 /* BACKGROUND COLORS */
@@ -160,4 +154,12 @@ small,
 
 .p-button-text.p-button-contrast {
     color: var(--primary-text-color) !important;
+}
+
+.p-dialog-header {
+    padding-bottom: 10px !important;
+}
+
+.p-dialog-content {
+    padding-top: 10px;
 }

@@ -26,6 +26,31 @@ const routes = [
                     mainClass: "h-full",
                 },
             },
+            // DOCTOR
+            {
+                path: "schedules",
+                name: "schedules",
+                component: () => import("@/pages/Schedules.vue"),
+                meta: {
+                    title: "Schedules",
+                },
+            },
+            {
+                path: "patients",
+                name: "patients",
+                component: () => import("@/pages/Patients.vue"),
+                meta: {
+                    title: "Patients",
+                },
+            },
+            {
+                path: "prescriptions",
+                name: "prescriptions",
+                component: () => import("@/pages/Prescriptions.vue"),
+                meta: {
+                    title: "Prescriptions",
+                },
+            },
             // PATIENTS,
             {
                 path: "appointments",
@@ -54,19 +79,28 @@ const routes = [
                 },
             },
             {
-                path: "consultation",
-                name: "consultation",
-                component: () => import("@/pages/Consultation.vue"),
-                meta: {
-                    title: "Consultation",
-                },
-            },
-            {
                 path: "billing",
                 name: "billing",
                 component: () => import("@/pages/Billing.vue"),
                 meta: {
                     title: "Billing",
+                },
+            },
+            // SHARED
+            {
+                path: "profile",
+                name: "profile",
+                component: () => import("@/pages/Profile.vue"),
+                meta: {
+                    title: "Profile",
+                },
+            },
+            {
+                path: "consultation",
+                name: "consultation",
+                component: () => import("@/pages/Consultation.vue"),
+                meta: {
+                    title: "Consultation",
                 },
             },
         ],

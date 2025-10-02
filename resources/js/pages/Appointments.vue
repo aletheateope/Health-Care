@@ -9,6 +9,7 @@ import TieredMenu from "primevue/tieredmenu";
 
 import { Form, FormField } from "@primevue/forms";
 import DatePicker from "primevue/datepicker";
+import InputText from "primevue/inputtext";
 
 const appointmentTypes = ref("upcoming");
 
@@ -113,23 +114,54 @@ const moreMenu = (event) => {
         header="Schedule Appointment"
         appendTo="self"
         :dismissableMask="true"
-        :style="{ width: '30rem' }"
+        class="w-[96%] md:w-[80%] xl:w-[50%]"
     >
-        <div class="mt-4">
-            <p>
-                Prefer a specific doctor?
-                <span>
-                    <RouterLink :to="{ name: 'doctor-appointment' }">
-                        <Button
-                            label="Book here"
-                            as="a"
-                            variant="link"
-                            type="button"
-                            class="p-0!"
-                        />
-                    </RouterLink>
-                </span>
-            </p>
-        </div>
+        <p class="mb-4">
+            Prefer a specific doctor?
+            <span>
+                <RouterLink :to="{ name: 'doctor-appointment' }">
+                    <Button
+                        label="Book here"
+                        as="a"
+                        variant="link"
+                        type="button"
+                        class="p-0!"
+                    />
+                </RouterLink>
+            </span>
+        </p>
+        <Form ref="addAppointmentForm" @submit="onSubmit">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <DatePicker v-model="date" inline showWeek class="flex-1" />
+                    <div class="flex-1">
+                        <FormField>
+                            <label for="date">Date</label>
+                            <InputText
+                                id="date"
+                                v-model="value"
+                                disabled
+                                fluid
+                            />
+                        </FormField>
+                    </div>
+                </div>
+            </div>
+        </Form>
+        <template #footer>
+            <div class="flex justify-end gap-2">
+                <Button
+                    type="button"
+                    label="Cancel"
+                    severity="secondary"
+                    @click="addAppointmentModal = false"
+                />
+                <Button
+                    type="button"
+                    label="Book Appointment"
+                    @click="$refs.addAppointmentForm.submit()"
+                />
+            </div>
+        </template>
     </Dialog>
 </template>

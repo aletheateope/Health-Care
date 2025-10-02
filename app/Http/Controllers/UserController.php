@@ -29,7 +29,23 @@ class UserController extends Controller
 
     public function currentUser(Request $request)
     {
-        return new UserResource($request->user()->load('profile'));
+        $user = $request->user();
+
+        $user->load('profile');
+
+        switch ($user->role) {
+            case 'doctor':
+                $user->load('profile.doctor.specialty');
+                break;
+            case 'staff':
+                $user->load('profile.staff');
+                break;
+            case 'patient':
+                $user->load('profile.patient');
+                break;
+        }
+
+        return new UserResource($user);
     }
 
     public function store(Request $request, CreateNewUser $creator)

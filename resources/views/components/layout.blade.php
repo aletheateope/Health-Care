@@ -31,7 +31,7 @@
                         <i class="pi pi-phone" style="font-size: var(--h4)"></i>
                     </div>
                     <div class="flex flex-col">
-                        <h6 class="inactive-text-light">Emergency Line</h6>
+                        <h6 class="text-zinc-300">Emergency Line</h6>
                         <p class="h5">(+63) 123 456 789</p>
                     </div>
                 </div>

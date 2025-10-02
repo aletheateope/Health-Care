@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Profile extends Model
 {
@@ -35,5 +36,27 @@ class Profile extends Model
     public function doctor()
     {
         return $this->hasOne(Doctor::class);
+    }
+
+    
+    protected function firstName(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => ucfirst(strtolower($value))
+        );
+    }
+
+    protected function middleName(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => ucfirst(strtolower($value))
+        );
+    }
+
+    protected function lastName(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => ucfirst(strtolower($value))
+        );
     }
 }
