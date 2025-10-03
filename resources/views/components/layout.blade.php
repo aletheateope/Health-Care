@@ -12,12 +12,13 @@
 
 <body>
     @if ($showHero)
-    <div class="flex flex-col h-screen mb-22">
+    <div class="flex flex-col md:h-screen mb-22">
         <x-header></x-header>
         <section
             style="background-image: linear-gradient(rgba(6, 39, 35, 0.5),rgba(20, 184, 166, 0.5)), url('{{ asset('img/hero-section_bg.jpg') }}')"
-            class="flex flex-row flex-grow bg-no-repeat bg-left bg-size-[150%] text-white p-24 items-center">
-            <div class="flex flex-col flex-1 gap-10">
+            class="flex flex-col lg:flex-row flex-grow text-white p-12 md:p-24 bg-no-repeat items-center bg-position-[20%] bg-cover xl:bg-size-[150%] md:bg-left lg:bg-size-[140%]">
+            <div
+                class="h-full flex flex-col flex-1 gap-14 text-center md:text-left items-center md:items-start md:justify-center">
                 <h1 class="font-bold">Smarter Healthcare <br> Starts Here</h1>
                 <h6>Our healthcare management system helps clinics and hospitals streamline appointments, patient
                     records,
@@ -37,14 +38,14 @@
                 </div>
                 <div data-vue="Button" data-label="Book an Appointment" data-icon="pi pi-calendar"></div>
             </div>
-            <div class="flex flex-col flex-1">
+            <div class="hidden flex-col md:w-[30%] md:flex lg:w-[15%] xl:w-[40%] 2xl:flex-1">
             </div>
         </section>
     </div>
     @else
     <x-header></x-header>
     @endif
-    <main class="flex flex-col gap-40 px-24 py-12">
+    <main class="flex flex-col gap-40 px-12 py-8 lg:px-24 lg:py-12">
         {{ $slot }}
     </main>
     <footer id="vue-footer"></footer>

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useAuthStore } from "@/stores/auth";
@@ -8,8 +8,10 @@ import Section from "@/components/Section.vue";
 
 import Dialog from "primevue/dialog";
 import { Form, FormField } from "@primevue/forms";
+import Message from "primevue/message";
 import SelectButton from "primevue/selectbutton";
-import Select from "primevue/select";
+
+import AutoComplete from "primevue/autocomplete";
 
 const auth = useAuthStore();
 const { user } = storeToRefs(auth);
@@ -18,7 +20,12 @@ const role = computed(() => user.value?.role.toLowerCase() || "");
 
 const editScheduleModal = ref(false);
 
-const selectedDays = ref([]);
+const schedules = ref([
+    {
+        selectedDays: [],
+        timeSlots: [""],
+    },
+]);
 
 const days = ref([
     { name: "Monday" },
@@ -30,11 +37,151 @@ const days = ref([
     { name: "Sunday" },
 ]);
 
-const slots = ref([]);
-
 const slots = [
-    {label: "9:00 AM", values:""},
-],
+    "6:00 AM",
+    "6:30 AM",
+    "7:00 AM",
+    "7:30 AM",
+    "8:00 AM",
+    "8:30 AM",
+    "9:00 AM",
+    "9:30 AM",
+    "10:00 AM",
+    "10:30 AM",
+    "11:00 AM",
+    "11:30 AM",
+    "12:00 PM",
+    "12:30 PM",
+    "1:00 PM",
+    "1:30 PM",
+    "2:00 PM",
+    "2:30 PM",
+    "3:00 PM",
+    "3:30 PM",
+    "4:00 PM",
+    "4:30 PM",
+    "5:00 PM",
+    "5:30 PM",
+    "6:00 PM",
+    "6:30 PM",
+    "7:00 PM",
+    "7:30 PM",
+    "8:00 PM",
+    "8:30 PM",
+    "9:00 PM",
+    "9:30 PM",
+    "10:00 PM",
+    "10:30 PM",
+    "11:00 PM",
+    "11:30 PM",
+    "12:00 AM",
+    "12:30 AM",
+    "1:00 AM",
+    "1:30 AM",
+    "2:00 AM",
+    "2:30 AM",
+    "3:00 AM",
+    "3:30 AM",
+    "4:00 AM",
+    "4:30 AM",
+    "5:00 AM",
+    "5:30 AM",
+];
+
+const filteredSlots = ref([]);
+
+function searchSlots(event) {
+    const query = event.query.toLowerCase();
+    filteredSlots.value = slots.filter((s) => s.toLowerCase().includes(query));
+}
+
+function timeToMinutes(timeStr) {
+    const [time, modifier] = timeStr.split(" "); // "6:30", "AM"
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+}
+
+function availableDays(currentSchedule) {
+    const selectedDays = schedules.value
+        .filter((s) => s !== currentSchedule)
+        .flatMap((s) => s.selectedDays)
+        .map((d) => d.name); // flatten and get names
+
+    return days.value.filter((day) => !selectedDays.includes(day.name));
+}
+
+function watchSchedule(schedule) {
+    watch(
+        () => schedule.timeSlots,
+        (newVal) => {
+            if (schedule.selectedDays.length === 0) return;
+
+            const nonEmptySlots = newVal.filter((slot) => slot);
+            nonEmptySlots.sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+
+            const merged = [...nonEmptySlots, ""];
+            if (JSON.stringify(schedule.timeSlots) !== JSON.stringify(merged)) {
+                schedule.timeSlots = merged;
+            }
+        },
+        { deep: true }
+    );
+
+    watch(
+        () => schedule.selectedDays,
+        (newVal) => {
+            if (newVal.length === 0) schedule.timeSlots = [];
+            else if (schedule.timeSlots.length === 0) schedule.timeSlots = [""];
+        },
+        { deep: true }
+    );
+}
+
+schedules.value.forEach((s) => watchSchedule(s));
+
+watch(
+    schedules,
+    (newVal) => {
+        for (let i = newVal.length - 2; i >= 0; i--) {
+            const schedule = newVal[i];
+            if (
+                schedule.selectedDays.length === 0 &&
+                schedule.timeSlots.every((slot) => !slot)
+            ) {
+                newVal.splice(i, 1);
+            }
+        }
+
+        const lastSchedule = newVal[newVal.length - 1];
+        if (
+            lastSchedule.selectedDays.length > 0 ||
+            lastSchedule.timeSlots.some((slot) => slot)
+        ) {
+            newVal.push({ selectedDays: [], timeSlots: [""] });
+            watchSchedule(newVal[newVal.length - 1]);
+        }
+    },
+    { deep: true }
+);
+
+function canSelectDays(scheduleIndex) {
+    // All previous schedules
+    for (let i = 0; i < scheduleIndex; i++) {
+        const prev = schedules.value[i];
+        // If previous schedule has selected days but no time slots, block
+        if (
+            prev.selectedDays.length > 0 &&
+            prev.timeSlots.every((slot) => !slot)
+        ) {
+            return false;
+        }
+    }
+    return true;
+}
 </script>
 
 <style>
@@ -180,20 +327,69 @@ const slots = [
             :style="{ width: '30rem' }"
         >
             <Form ref="editScheduleForm">
-                <div class="flex flex-col gap-4">
-                    <SelectButton
-                        v-model="selectedDays"
-                        :options="days"
-                        optionLabel="name"
-                        multiple
-                        aria-labelledby="multiple"
-                        class="select-days-btn rounded-md!"
-                    />
-                    <Button
-                        label="Add Slot"
-                        icon="pi pi-plus"
-                        iconPos="right"
-                    />
+                <div class="flex flex-col gap-8">
+                    <div
+                        v-for="(schedule, idx) in schedules"
+                        :key="idx"
+                        class="flex flex-col gap-4"
+                    >
+                        <div class="flex flex-col gap-2">
+                            <p
+                                v-if="
+                                    idx > 0 &&
+                                    schedule.selectedDays.length === 0 &&
+                                    availableDays(schedule).length > 0
+                                "
+                                class="xsmall text-center"
+                            >
+                                Add more time slots by selecting another
+                                schedule in an empty day selection
+                            </p>
+                            <FormField>
+                                <SelectButton
+                                    v-model="schedule.selectedDays"
+                                    multiple
+                                    optionLabel="name"
+                                    aria-labelledby="multiple"
+                                    :options="availableDays(schedule)"
+                                    :disabled="!canSelectDays(idx)"
+                                    class="select-days-btn rounded-md!"
+                                />
+                                <Message
+                                    severity="error"
+                                    size="small"
+                                    variant="simple"
+                                >
+                                </Message>
+                            </FormField>
+                        </div>
+                        <div
+                            v-if="schedule.selectedDays.length > 0"
+                            class="flex flex-col gap-2"
+                        >
+                            <div
+                                v-for="(slot, sidx) in schedule.timeSlots"
+                                :key="sidx"
+                            >
+                                <FormField>
+                                    <AutoComplete
+                                        v-model="schedule.timeSlots[sidx]"
+                                        dropdown
+                                        fluid
+                                        :suggestions="filteredSlots"
+                                        @complete="searchSlots"
+                                        placeholder="Select Time Slot"
+                                    />
+                                    <Message
+                                        severity="error"
+                                        size="small"
+                                        variant="simple"
+                                    >
+                                    </Message>
+                                </FormField>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </Form>
             <template #footer>
