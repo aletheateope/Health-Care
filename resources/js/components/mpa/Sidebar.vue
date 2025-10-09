@@ -11,6 +11,7 @@ const links = [
     { name: "Find a Doctor", path: "/doctor" },
     { name: "Services", path: "/services" },
     { name: "Contact", path: "/contact" },
+    { name: "Login", path: "/login" },
 ];
 </script>
 

@@ -41,9 +41,7 @@ function clearError(field) {
 
 <template>
     <Form :initialValues="initialValues" @submit="onSubmit">
-        <div
-            class="flex flex-col w-[34rem] items-center gap-14 text-center p-14"
-        >
+        <div class="flex flex-col items-center gap-14 text-center">
             <div class="flex flex-col gap-2">
                 <h3>Hello!</h3>
                 <p>Log in to access your account and get started.</p>
@@ -90,7 +88,9 @@ function clearError(field) {
                         >{{ errors.password[0] }}
                     </Message>
                 </FormField>
-                <div class="flex flex-row items-center justify-between px-2">
+                <div
+                    class="flex gap-2 flex-row items-center justify-between sm:px-2"
+                >
                     <FormField name="remember" v-slot="{ field }">
                         <div class="flex items-center gap-2">
                             <Checkbox
@@ -125,7 +125,7 @@ function clearError(field) {
             <p class="border-b w-full text-center leading-[0.1em]">
                 <span class="bg-color px-4">Or sign in with</span>
             </p>
-            <div class="flex flex-row w-full justify-center gap-4">
+            <div class="flex flex-col sm:flex-row w-full justify-center gap-4">
                 <Button
                     icon="pi pi-google"
                     label="Google"

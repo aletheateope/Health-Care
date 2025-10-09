@@ -45,7 +45,7 @@
     @else
     <x-header></x-header>
     @endif
-    <main class="flex flex-col gap-40 px-12 py-8 lg:px-24 lg:py-12">
+    <main class="flex flex-col gap-40 sm:px-12 sm:py-8 lg:px-24 lg:py-12">
         {{ $slot }}
     </main>
     <footer id="vue-footer"></footer>

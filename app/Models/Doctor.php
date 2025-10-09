@@ -25,6 +25,11 @@ class Doctor extends Model
         return $this->belongsTo(DoctorSpecialty::class);
     }
 
+    public function availabilities()
+    {
+        return $this->hasMany(DoctorAvailability::class);
+    }
+
     public function appointments()
     {
         return $this->hasMany(Appointment::class);

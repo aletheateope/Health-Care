@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ScheduleController;
 
 Route::get('/', function () {
     return view('home');
@@ -49,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/user', [UserController::class, 'currentUser']);
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
+    Route::post('/doctor/schedule', [ScheduleController::class, 'store']);
+    Route::get('/doctor/schedule', [ScheduleController::class, 'mySchedule']);
 });
 
 Route::get('/force-logout', function () {

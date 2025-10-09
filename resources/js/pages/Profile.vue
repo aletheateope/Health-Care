@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
 import { useAuthStore } from "@/stores/auth";
@@ -10,13 +10,103 @@ import Dialog from "primevue/dialog";
 import { Form, FormField } from "@primevue/forms";
 import Message from "primevue/message";
 import SelectButton from "primevue/selectbutton";
-
 import AutoComplete from "primevue/autocomplete";
+
+import { useAppToast } from "@/utils/toast";
+
+const toast = useAppToast();
 
 const auth = useAuthStore();
 const { user } = storeToRefs(auth);
 
 const role = computed(() => user.value?.role.toLowerCase() || "");
+
+const mySchedule = ref([]);
+const loading = ref(false);
+const error = ref(null);
+
+async function fetchSchedule() {
+    loading.value = true;
+    error.value = null;
+
+    try {
+        const response = await axios.get("/doctor/schedule");
+        mySchedule.value = response.data.data;
+
+        if (mySchedule.value.length > 0) {
+            schedules.value = transformSchedule(mySchedule.value);
+        } else {
+            schedules.value = [{ selectedDays: [], timeSlots: [""] }];
+        }
+
+        schedules.value.forEach((s) => watchSchedule(s));
+    } catch (err) {
+        error.value = "Failed to load schedule.";
+        console.error(err);
+    } finally {
+        loading.value = false;
+    }
+}
+
+onMounted(() => {
+    fetchSchedule();
+});
+
+function getAvailability(day) {
+    return mySchedule.value.filter((a) => a.day_of_week === day);
+}
+
+function transformSchedule(raw) {
+    // Step 1: Build a map of day -> timeSlots
+    const daySlotsMap = {};
+
+    raw.forEach((item) => {
+        const day = item.day_of_week;
+        if (!daySlotsMap[day]) daySlotsMap[day] = [];
+        if (!daySlotsMap[day].includes(item.start_time)) {
+            daySlotsMap[day].push(item.start_time);
+        }
+    });
+
+    // Step 2: Convert map to array of { day, slots } and sort slots
+    const daysWithSlots = Object.entries(daySlotsMap).map(([day, slots]) => ({
+        day,
+        slots: slots.sort((a, b) => timeToMinutes(a) - timeToMinutes(b)),
+    }));
+
+    // Step 3: Group days with identical slots
+    const grouped = [];
+    const used = new Set();
+
+    for (let i = 0; i < daysWithSlots.length; i++) {
+        if (used.has(i)) continue;
+
+        const current = daysWithSlots[i];
+        const groupDays = [current.day];
+
+        for (let j = i + 1; j < daysWithSlots.length; j++) {
+            if (used.has(j)) continue;
+
+            const compare = daysWithSlots[j];
+            if (
+                current.slots.length === compare.slots.length &&
+                current.slots.every((slot, idx) => slot === compare.slots[idx])
+            ) {
+                groupDays.push(compare.day);
+                used.add(j);
+            }
+        }
+
+        grouped.push({
+            selectedDays: groupDays.map((d) => ({
+                name: d.charAt(0).toUpperCase() + d.slice(1),
+            })),
+            timeSlots: [...current.slots, ""], // extra empty slot for adding new time
+        });
+    }
+
+    return grouped;
+}
 
 const editScheduleModal = ref(false);
 
@@ -90,9 +180,19 @@ const slots = [
 
 const filteredSlots = ref([]);
 
-function searchSlots(event) {
+function searchSlots(event, currentSchedule, slotIndex) {
     const query = event.query.toLowerCase();
-    filteredSlots.value = slots.filter((s) => s.toLowerCase().includes(query));
+
+    const selectedSlots = schedules.value.flatMap((s, idx) =>
+        s.timeSlots.filter(
+            (slot, sidx) =>
+                slot && (s !== currentSchedule || sidx !== slotIndex)
+        )
+    );
+
+    filteredSlots.value = slots.filter(
+        (s) => s.toLowerCase().includes(query) && !selectedSlots.includes(s)
+    );
 }
 
 function timeToMinutes(timeStr) {
@@ -114,18 +214,21 @@ function availableDays(currentSchedule) {
     return days.value.filter((day) => !selectedDays.includes(day.name));
 }
 
+function sortSlots(schedule) {
+    const nonEmptySlots = schedule.timeSlots.filter((slot) => slot);
+    nonEmptySlots.sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+    schedule.timeSlots = [...nonEmptySlots, ""];
+}
+
 function watchSchedule(schedule) {
     watch(
         () => schedule.timeSlots,
         (newVal) => {
             if (schedule.selectedDays.length === 0) return;
 
-            const nonEmptySlots = newVal.filter((slot) => slot);
-            nonEmptySlots.sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
-
-            const merged = [...nonEmptySlots, ""];
-            if (JSON.stringify(schedule.timeSlots) !== JSON.stringify(merged)) {
-                schedule.timeSlots = merged;
+            const nonEmpty = schedule.timeSlots.filter((slot) => slot?.trim());
+            if (schedule.timeSlots.length !== nonEmpty.length + 1) {
+                schedule.timeSlots = [...nonEmpty, ""];
             }
         },
         { deep: true }
@@ -169,10 +272,8 @@ watch(
 );
 
 function canSelectDays(scheduleIndex) {
-    // All previous schedules
     for (let i = 0; i < scheduleIndex; i++) {
         const prev = schedules.value[i];
-        // If previous schedule has selected days but no time slots, block
         if (
             prev.selectedDays.length > 0 &&
             prev.timeSlots.every((slot) => !slot)
@@ -182,10 +283,34 @@ function canSelectDays(scheduleIndex) {
     }
     return true;
 }
+
+async function onSubmitSchedule() {
+    const payload = schedules.value
+        .map((schedule) => ({
+            selectedDays: schedule.selectedDays.map((d) => d.name),
+            timeSlots: schedule.timeSlots.filter((slot) => slot?.trim()),
+        }))
+        .filter((schedule) => schedule.timeSlots.length > 0);
+
+    try {
+        const response = await axios.post("/doctor/schedule", {
+            schedules: payload,
+        });
+
+        await fetchSchedule();
+
+        editScheduleModal.value = false;
+
+        toast.success("Schedule updated successfully.");
+    } catch (error) {
+        toast.error("Failed to update schedule.");
+    }
+}
 </script>
 
 <style>
 .select-days-btn {
+    width: 100%;
     flex-wrap: wrap;
     overflow: hidden;
 
@@ -216,107 +341,199 @@ function canSelectDays(scheduleIndex) {
 </style>
 
 <template>
-    <div v-if="role === 'doctor'" class="flex flex-col gap-4">
-        <Section title="Personal Information" edit>
-            <div class="flex flex-col gap-4">
-                <div class="flex flex-col md:flex-row gap-4 md:items-center">
-                    <div>
-                        <img
-                            src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png"
-                            alt="Profile Picture"
-                            class="w-full h-full sm:size-54 border rounded-md border-color object-cover"
-                        />
+    <Toast />
+    <div v-if="role === 'doctor'">
+        <div class="flex flex-col gap-4">
+            <Section title="Personal Information" edit>
+                <div class="flex flex-col gap-4">
+                    <div
+                        class="flex flex-col md:flex-row gap-4 md:items-center"
+                    >
+                        <div>
+                            <img
+                                src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png"
+                                alt="Profile Picture"
+                                class="w-full h-full sm:size-54 border rounded-md border-color object-cover"
+                            />
+                        </div>
+                        <div class="flex flex-col md:flex-grow gap-4">
+                            <div class="flex flex-col">
+                                <h6>Name</h6>
+                                <p>
+                                    {{ user.profile.first_name }}
+                                    {{ user.profile.middle_name }}
+                                    {{ user.profile.last_name }}
+                                </p>
+                            </div>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex flex-col flex-1">
+                                    <h6>Specialty</h6>
+                                    <p>
+                                        {{
+                                            user.profile.doctor?.specialty
+                                                ?.name || "N/A"
+                                        }}
+                                    </p>
+                                </div>
+                                <div class="flex flex-col flex-1">
+                                    <h6>Room</h6>
+                                    <p>
+                                        {{
+                                            user.profile.doctor?.room_number ||
+                                            "N/A"
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex flex-col flex-1">
+                                    <h6>Email</h6>
+                                    <p>{{ user.email }}</p>
+                                </div>
+                                <div class="flex flex-col flex-1">
+                                    <h6>Clinic Number</h6>
+                                    <p>
+                                        {{
+                                            user.profile.doctor
+                                                ?.clinic_phone_number || "N/A"
+                                        }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex flex-col md:flex-grow gap-4">
-                        <div class="flex flex-col">
-                            <h6>Name</h6>
-                            <p>
-                                {{ user.profile.first_name }}
-                                {{ user.profile.middle_name }}
-                                {{ user.profile.last_name }}
+                    <div>
+                        <h6 class="text-base!">Doctor Notes</h6>
+                        <p>{{ user.profile.doctor?.doctor_note || "N/A" }}</p>
+                    </div>
+                </div>
+            </Section>
+            <Section
+                title="Schedule"
+                edit
+                @edit-clicked="editScheduleModal = true"
+            >
+                <div v-if="loading"><p>Loading schedule...</p></div>
+                <div v-else class="flex flex-col gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex flex-col flex-1">
+                            <h6>Monday</h6>
+                            <template
+                                v-if="getAvailability('monday').length > 0"
+                            >
+                                <p v-for="slot in getAvailability('monday')">
+                                    {{ slot.start_time }}
+                                </p>
+                            </template>
+                            <p
+                                v-else
+                                class="text-gray-500 dark:text-gray-400 small"
+                            >
+                                No schedule available.
                             </p>
                         </div>
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="flex flex-col flex-1">
-                                <h6>Specialty</h6>
-                                <p>
-                                    {{
-                                        user.profile.doctor?.specialty?.name ||
-                                        "N/A"
-                                    }}
+                        <div class="flex flex-col flex-1">
+                            <h6>Tuesday</h6>
+                            <template
+                                v-if="getAvailability('tuesday').length > 0"
+                            >
+                                <p v-for="slot in getAvailability('tuesday')">
+                                    {{ slot.start_time }}
                                 </p>
-                            </div>
-                            <div class="flex flex-col flex-1">
-                                <h6>Room</h6>
-                                <p>
-                                    {{
-                                        user.profile.doctor?.room_number ||
-                                        "N/A"
-                                    }}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="flex flex-col flex-1">
-                                <h6>Email</h6>
-                                <p>{{ user.email }}</p>
-                            </div>
-                            <div class="flex flex-col flex-1">
-                                <h6>Clinic Number</h6>
-                                <p>
-                                    {{
-                                        user.profile.doctor
-                                            ?.clinic_phone_number || "N/A"
-                                    }}
-                                </p>
-                            </div>
+                            </template>
+                            <p
+                                v-else
+                                class="text-gray-500 dark:text-gray-400 small"
+                            >
+                                No schedule available.
+                            </p>
                         </div>
                     </div>
-                </div>
-                <div>
-                    <h6 class="text-base!">Doctor Notes</h6>
-                    <p>{{ user.profile.doctor?.doctor_note || "N/A" }}</p>
-                </div>
-            </div>
-        </Section>
-        <Section title="Schedule" edit @edit-clicked="editScheduleModal = true">
-            <div class="flex flex-col gap-4">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex flex-col flex-1">
-                        <h6>Monday</h6>
-                        <p>test</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex flex-col flex-1">
+                            <h6>Wednesday</h6>
+                            <template
+                                v-if="getAvailability('wednesday').length > 0"
+                            >
+                                <p v-for="slot in getAvailability('wednesday')">
+                                    {{ slot.start_time }}
+                                </p>
+                            </template>
+                            <p
+                                v-else
+                                class="text-gray-500 dark:text-gray-400 small"
+                            >
+                                No schedule available.
+                            </p>
+                        </div>
+                        <div class="flex flex-col flex-1">
+                            <h6>Thursday</h6>
+                            <template
+                                v-if="getAvailability('thursday').length > 0"
+                            >
+                                <p v-for="slot in getAvailability('thursday')">
+                                    {{ slot.start_time }}
+                                </p>
+                            </template>
+                            <p
+                                v-else
+                                class="text-gray-500 dark:text-gray-400 small"
+                            >
+                                No schedule available.
+                            </p>
+                        </div>
                     </div>
-                    <div class="flex flex-col flex-1">
-                        <h6>Tuesday</h6>
-                        <p>test</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex flex-col flex-1">
+                            <h6>Friday</h6>
+                            <template
+                                v-if="getAvailability('friday').length > 0"
+                            >
+                                <p v-for="slot in getAvailability('friday')">
+                                    {{ slot.start_time }}
+                                </p>
+                            </template>
+                            <p
+                                v-else
+                                class="text-gray-500 dark:text-gray-400 small"
+                            >
+                                No schedule available.
+                            </p>
+                        </div>
+                        <div class="flex flex-col flex-1">
+                            <h6>Saturday</h6>
+                            <template
+                                v-if="getAvailability('saturday').length > 0"
+                            >
+                                <p v-for="slot in getAvailability('saturday')">
+                                    {{ slot.start_time }}
+                                </p>
+                            </template>
+                            <p
+                                v-else
+                                class="text-gray-500 dark:text-gray-400 small"
+                            >
+                                No schedule available.
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <h6>Sunday</h6>
+                        <template v-if="getAvailability('sunday').length > 0">
+                            <p v-for="slot in getAvailability('sunday')">
+                                {{ slot.start_time }}
+                            </p>
+                        </template>
+                        <p
+                            v-else
+                            class="text-gray-500 dark:text-gray-400 small"
+                        >
+                            No schedule available.
+                        </p>
                     </div>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex flex-col flex-1">
-                        <h6>Wednesday</h6>
-                        <p>test</p>
-                    </div>
-                    <div class="flex flex-col flex-1">
-                        <h6>Thursday</h6>
-                        <p>test</p>
-                    </div>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <div class="flex flex-col flex-1">
-                        <h6>Friday</h6>
-                        <p>test</p>
-                    </div>
-                    <div class="flex flex-col flex-1">
-                        <h6>Saturday</h6>
-                        <p>test</p>
-                    </div>
-                </div>
-                <div>
-                    <h6>Sunday</h6>
-                    <p>test</p>
-                </div>
-            </div>
-        </Section>
+            </Section>
+        </div>
 
         <Dialog
             v-model:visible="editScheduleModal"
@@ -326,7 +543,11 @@ function canSelectDays(scheduleIndex) {
             :dismissableMask="true"
             :style="{ width: '30rem' }"
         >
-            <Form ref="editScheduleForm">
+            <Form
+                :initialValues="{ schedules }"
+                ref="editScheduleForm"
+                @submit="onSubmitSchedule"
+            >
                 <div class="flex flex-col gap-8">
                     <div
                         v-for="(schedule, idx) in schedules"
@@ -347,12 +568,12 @@ function canSelectDays(scheduleIndex) {
                             </p>
                             <FormField>
                                 <SelectButton
-                                    v-model="schedule.selectedDays"
                                     multiple
                                     optionLabel="name"
                                     aria-labelledby="multiple"
                                     :options="availableDays(schedule)"
                                     :disabled="!canSelectDays(idx)"
+                                    v-model="schedule.selectedDays"
                                     class="select-days-btn rounded-md!"
                                 />
                                 <Message
@@ -377,7 +598,11 @@ function canSelectDays(scheduleIndex) {
                                         dropdown
                                         fluid
                                         :suggestions="filteredSlots"
-                                        @complete="searchSlots"
+                                        @complete="
+                                            (e) =>
+                                                searchSlots(e, schedule, sidx)
+                                        "
+                                        @blur="sortSlots(schedule)"
                                         placeholder="Select Time Slot"
                                     />
                                     <Message
