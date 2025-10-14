@@ -10,10 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('services', function (Blueprint $table) {
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('insurances');
+        Schema::enableForeignKeyConstraints();
+
+        Schema::create('insurances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_category_id')->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->enum('status', ['pending','accepted','rejected'])->default('pending');
             $table->timestamps();
         });
     }
@@ -23,9 +27,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('services');
-        Schema::enableForeignKeyConstraints();
-
+        Schema::dropIfExists('insurances');
     }
 };

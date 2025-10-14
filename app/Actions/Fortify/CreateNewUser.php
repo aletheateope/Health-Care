@@ -53,11 +53,10 @@ class CreateNewUser implements CreatesNewUsers
             'contact_email'=> $input['email'],
         ]);
 
-        if ($input['role'] === 'doctor') {
-            $profile->doctor()->create([
-            ]);
+        if (in_array($input['role'], ['doctor', 'staff', 'patient'])) {
+            $relation = $input['role'];
+            $profile->{$relation}()->create([]);
         }
-
 
         return $user;
     }

@@ -62,8 +62,9 @@ class ScheduleController extends Controller
                 // Remove empty and duplicate time slots, parse with Carbon, sort
                 $timeSlots = collect($scheduleData['timeSlots'])
                     ->filter(fn ($t) => trim($t) !== '')
+                    ->map(fn ($t) => Carbon::parse($t)->format('H:i')) // normalize to 24-hr
                     ->unique()
-                    ->map(fn ($t) => Carbon::parse($t))
+                    ->map(fn ($t) => Carbon::createFromFormat('H:i', $t))
                     ->sort()
                     ->values();
 

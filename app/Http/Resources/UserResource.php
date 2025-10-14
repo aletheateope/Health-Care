@@ -36,9 +36,10 @@ class UserResource extends JsonResource
             if ($this->profile->relationLoaded('doctor') && $this->profile->doctor) {
                 $data['doctor'] = [
                     'id' => $this->profile->doctor->id,
-                    'specialty'    => $this->profile->doctor->specialty
-                                        ? $this->profile->doctor->specialty->name
-                                        : null,
+                    'specialty' => [
+                        'id' => $this->profile->doctor->specialty?->id,
+                        'name' => $this->profile->doctor->specialty?->name,
+                    ],
                     'license_number' => $this->profile->doctor->license_number,
                     'room_number' => $this->profile->doctor->room_number,
                     'clinic_phone_number' => $this->profile->doctor->clinic_phone_number,

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Staff extends Model
 {
     protected $fillable = [
-        'user_id',
+        'profile_id',
     ];
 
     public function profile()

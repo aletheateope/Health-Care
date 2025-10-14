@@ -1,10 +1,13 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\DoctorProfileController;
+use App\Http\Controllers\AppointmentController;
 
 Route::get('/', function () {
     return view('home');
@@ -52,6 +55,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/users', [UserController::class, 'store']);
     Route::post('/doctor/schedule', [ScheduleController::class, 'store']);
     Route::get('/doctor/schedule', [ScheduleController::class, 'mySchedule']);
+    Route::put('/doctor/profile', [DoctorProfileController::class, 'update']);
+    Route::post('/appointment', [AppointmentController::class, 'store']);
 });
 
 Route::get('/force-logout', function () {

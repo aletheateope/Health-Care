@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 
 import SelectButton from "primevue/selectbutton";
 import Dialog from "primevue/dialog";
@@ -8,8 +8,16 @@ import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
 
 import { Form, FormField } from "@primevue/forms";
+import FloatLabel from "primevue/floatlabel";
 import DatePicker from "primevue/datepicker";
 import InputText from "primevue/inputtext";
+import Select from "primevue/select";
+import AutoComplete from "primevue/autocomplete";
+
+import { formatDate } from "@/utils/date";
+import { useAppToast } from "@/utils/toast";
+
+const toast = useAppToast();
 
 const appointmentTypes = ref("upcoming");
 
@@ -18,8 +26,6 @@ const tabItems = [
     { label: "Today", value: "today" },
     { label: "History", value: "history" },
 ];
-
-const addAppointmentModal = ref(false);
 
 // const appointments = ref([]);
 
@@ -51,9 +57,170 @@ const menuItems = ref([
 const moreMenu = (event) => {
     menu.value.toggle(event);
 };
+
+const addAppointmentModal = ref(false);
+
+const teleconsultation = ref(false);
+const selectedAppointmentType = ref(null);
+const selectedHmo = ref(0);
+const hmoNumber = ref(null);
+const insuranceNumber = ref(null);
+const date = ref(null);
+const timeSlots = ref([]);
+const selectedTimeSlot = ref(null);
+
+async function fetchDoctorAvailableTimeSlots() {
+    if (!date.value || !selectedAppointmentType.value) return;
+
+    const serviceId = selectedAppointmentType.value?.value;
+
+    try {
+        const response = await axios.get("/api/available-time-slots", {
+            params: {
+                date: date.value.toISOString(),
+                service_id: serviceId,
+                hmo_id: selectedHmo.value,
+            },
+        });
+        timeSlots.value = response.data;
+        console.log(response.data);
+    } catch (err) {
+        console.error("Error fetching available times:", err);
+    }
+}
+
+watch(
+    [date, selectedAppointmentType, selectedHmo],
+    fetchDoctorAvailableTimeSlots
+);
+
+const yesNoOptions = [
+    { label: "No", value: false },
+    { label: "Yes", value: true },
+];
+
+const categories = ref([]);
+
+async function fetchServices() {
+    try {
+        const response = await axios.get("/api/services");
+        categories.value = response.data.data;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+onMounted(fetchServices);
+
+const appointmentTypesOptions = computed(() => {
+    return categories.value.map((cat) => ({
+        groupLabel: cat.name,
+        items: cat.services.map((service) => ({
+            label: service.name,
+            value: service.id,
+        })),
+    }));
+});
+
+const filteredAppointmentTypes = computed(() => {
+    if (teleconsultation.value === true) {
+        return appointmentTypesOptions.value.filter((opt) =>
+            ["General", "Therapy"].includes(opt.groupLabel)
+        );
+    }
+    return appointmentTypesOptions.value;
+});
+
+const hmoOptions = ref([]);
+
+async function fetchHmos() {
+    try {
+        const response = await axios.get("/api/hmos");
+
+        const hmos = response.data.data.map((hmo) => ({
+            label: hmo.name,
+            value: hmo.id,
+        }));
+
+        hmoOptions.value = [{ label: "None", value: 0 }, ...hmos];
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+onMounted(fetchHmos);
+
+const haveInsurance = ref(false);
+
+const insuranceOptions = ref([]);
+const filteredInsuranceOptions = ref([]);
+const selectedInsurance = ref(null);
+
+async function fetchInsurances() {
+    try {
+        const res = await axios.get("/api/insurances", {
+            params: { status: "accepted" },
+        });
+
+        insuranceOptions.value = res.data.data.map((i) => i.name);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+onMounted(fetchInsurances);
+
+function onInsuranceComplete(event) {
+    const query = event.query.toLowerCase();
+    filteredInsuranceOptions.value = insuranceOptions.value.filter((i) =>
+        i.toLowerCase().includes(query)
+    );
+}
+
+const errors = ref({});
+// const insurances
+async function onSubmit() {
+    errors.value = {};
+    try {
+        const payload = {
+            appointment_type: teleconsultation.value,
+            service_id: selectedAppointmentType.value.value,
+            hmo_id: selectedHmo.value,
+            hmo_number: hmoNumber.value,
+            insurance: selectedInsurance.value,
+            insurance_number: insuranceNumber.value,
+            date: date.value.toISOString(),
+            time_start: selectedTimeSlot.value,
+        };
+
+        const res = await axios.post("/appointment", payload);
+        toast.success("Appointment created successfully.");
+        addAppointmentModal.value = false;
+        fetchDoctorAvailableTimeSlots();
+    } catch (err) {
+        console.log(err);
+        console.error(err.response?.data || err);
+    }
+}
 </script>
 
+<style>
+.select-time-btn {
+    .p-togglebutton:first-child {
+        border-inline-start-width: 0 !important;
+        border-start-start-radius: 0 !important;
+        border-end-start-radius: 0 !important;
+    }
+
+    .p-togglebutton:last-child {
+        border-start-end-radius: 0 !important;
+        border-end-end-radius: 0 !important;
+    }
+}
+</style>
+
 <template>
+    <Toast />
     <section class="flex flex-col gap-8 h-full" id="appointments-section">
         <div class="flex justify-between">
             <SelectButton
@@ -116,7 +283,7 @@ const moreMenu = (event) => {
         :dismissableMask="true"
         class="w-[96%] md:w-[80%] xl:w-[50%]"
     >
-        <p class="mb-4">
+        <p class="mb-8 small">
             Prefer a specific doctor?
             <span>
                 <RouterLink :to="{ name: 'doctor-appointment' }">
@@ -126,24 +293,167 @@ const moreMenu = (event) => {
                         variant="link"
                         type="button"
                         class="p-0!"
+                        style="font-size: var(--small)"
                     />
                 </RouterLink>
             </span>
         </p>
         <Form ref="addAppointmentForm" @submit="onSubmit">
-            <div class="flex flex-col gap-4">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <DatePicker v-model="date" inline showWeek class="flex-1" />
-                    <div class="flex-1">
-                        <FormField>
-                            <label for="date">Date</label>
-                            <InputText
-                                id="date"
-                                v-model="value"
-                                disabled
+            <div class="flex flex-col gap-8">
+                <div class="flex flex-col gap-6">
+                    <FormField>
+                        <FloatLabel variant="on">
+                            <Select
+                                inputId="teleconsultation"
+                                v-model="teleconsultation"
+                                optionLabel="label"
+                                optionValue="value"
+                                :options="yesNoOptions"
                                 fluid
                             />
+                            <label for="teleconsultation"
+                                >Teleconsultation? (Consult with doctor
+                                online.)</label
+                            >
+                        </FloatLabel>
+                    </FormField>
+                    <FormField>
+                        <FloatLabel variant="on">
+                            <Select
+                                inputId="appointmentType"
+                                v-model="selectedAppointmentType"
+                                :options="filteredAppointmentTypes"
+                                optionLabel="label"
+                                optionGroupLabel="groupLabel"
+                                optionGroupChildren="items"
+                                :invalid="errors.appointmentType"
+                                name="service_id"
+                                fluid
+                            >
+                                <template #optiongroup="slotProps">
+                                    <div>
+                                        <h6 class="small">
+                                            {{ slotProps.option.groupLabel }}
+                                        </h6>
+                                    </div>
+                                </template>
+                            </Select>
+                            <label for="appointmentType"
+                                >Appointment Type</label
+                            >
+                        </FloatLabel>
+                        <!-- <Message
+                            v-if="errors.last_name"
+                            severity="error"
+                            size="small"
+                            variant="simple"
+                            >{{ errors.last_name[0] }}</Message
+                        > -->
+                    </FormField>
+                    <FormField>
+                        <FloatLabel variant="on">
+                            <Select
+                                inputId="hmo"
+                                v-model="selectedHmo"
+                                :options="hmoOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                name="patient_hmo_id"
+                                fluid
+                            />
+                            <label for="hmo">HMO</label>
+                        </FloatLabel>
+                    </FormField>
+                    <FormField v-if="selectedHmo != 0">
+                        <FloatLabel variant="on">
+                            <InputText
+                                id="hmoInputNumber"
+                                v-model="hmoNumber"
+                                fluid
+                            />
+                            <label for="hmoInputNumber">HMO Number</label>
+                        </FloatLabel>
+                    </FormField>
+                    <FormField>
+                        <FloatLabel variant="on">
+                            <Select
+                                inputId="haveInsurance"
+                                v-model="haveInsurance"
+                                :options="yesNoOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                fluid
+                            />
+                            <label for="haveInsurance"
+                                >Do you have insurance?</label
+                            >
+                        </FloatLabel>
+                    </FormField>
+                    <template v-if="haveInsurance">
+                        <FormField>
+                            <FloatLabel variant="on">
+                                <AutoComplete
+                                    v-model="selectedInsurance"
+                                    inputId="insurance"
+                                    dropdown
+                                    :suggestions="filteredInsuranceOptions"
+                                    @complete="onInsuranceComplete"
+                                    fluid
+                                />
+                                <label for="insurance"
+                                    >Insurance Company Name</label
+                                >
+                            </FloatLabel>
                         </FormField>
+                        <FormField>
+                            <FloatLabel variant="on">
+                                <InputText
+                                    id="insuranceNumber"
+                                    v-model="insuranceNumber"
+                                    fluid
+                                />
+                                <label for="insuranceNumber"
+                                    >Insurance Policy/ID Number</label
+                                >
+                            </FloatLabel>
+                        </FormField>
+                    </template>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h6 class="text-base!">Date Selection</h6>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <DatePicker
+                                v-model="date"
+                                inline
+                                :minDate="new Date()"
+                                class="w-full"
+                            />
+                        </div>
+                        <div class="flex flex-col flex-1 gap-4">
+                            <FormField>
+                                <label for="date">Date</label>
+                                <InputText
+                                    id="date"
+                                    :value="formatDate(date)"
+                                    disabled
+                                    fluid
+                                />
+                            </FormField>
+                            <div class="flex flex-col gap-2">
+                                <p>Available Time</p>
+                                <SelectButton
+                                    v-if="timeSlots.length > 0"
+                                    :options="timeSlots"
+                                    v-model="selectedTimeSlot"
+                                    class="select-time-btn grid! grid-cols-2 md:grid-cols-3 overflow-hidden p-2 bg-(--p-togglebutton-border-color)"
+                                    name="time_slot"
+                                />
+                                <p v-else class="text-gray-500">
+                                    No available slots
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

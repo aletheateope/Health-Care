@@ -8,7 +8,11 @@ import Section from "@/components/Section.vue";
 
 import Dialog from "primevue/dialog";
 import { Form, FormField } from "@primevue/forms";
+import FloatLabel from "primevue/floatlabel";
 import Message from "primevue/message";
+import InputText from "primevue/inputtext";
+import Textarea from "primevue/textarea";
+import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import AutoComplete from "primevue/autocomplete";
 
@@ -20,6 +24,73 @@ const auth = useAuthStore();
 const { user } = storeToRefs(auth);
 
 const role = computed(() => user.value?.role.toLowerCase() || "");
+
+const isEditingPersonal = ref(false);
+
+const formDoctorPersonal = ref({
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+    license_number: "",
+    specialty: "",
+    room_number: "",
+    email: "",
+    clinic_phone_number: "",
+    doctor_note: "",
+});
+
+const doctorSpecialtyOptions = ref([]);
+
+async function fetchDoctorSpecialties() {
+    try {
+        const response = await axios.get("/api/doctor/specialties");
+
+        doctorSpecialtyOptions.value = response.data.data.map((item) => ({
+            label: item.name,
+            value: item.id,
+        }));
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+onMounted(fetchDoctorSpecialties);
+
+async function editPersonal() {
+    const profile = user.value?.profile;
+    const doctor = user.value?.doctor;
+
+    formDoctorPersonal.value = {
+        first_name: profile?.first_name,
+        middle_name: profile?.middle_name,
+        last_name: profile?.last_name,
+        email: profile?.contact_email,
+        license_number: doctor?.license_number,
+        doctor_specialty_id: doctor?.specialty?.id,
+        room_number: doctor?.room_number,
+        clinic_phone_number: doctor?.clinic_phone_number,
+        doctor_note: doctor?.doctor_note,
+    };
+    isEditingPersonal.value = true;
+}
+
+async function cancelEditPersonal() {
+    isEditingPersonal.value = false;
+}
+
+async function onSubmitDoctorPersonal() {
+    try {
+        const response = await axios.put(
+            "/doctor/profile",
+            formDoctorPersonal.value
+        );
+        await auth.fetchUser();
+        toast.success("Profile updated successfully.");
+        isEditingPersonal.value = false;
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 const mySchedule = ref([]);
 const loading = ref(false);
@@ -128,54 +199,54 @@ const days = ref([
 ]);
 
 const slots = [
-    "6:00 AM",
-    "6:30 AM",
-    "7:00 AM",
-    "7:30 AM",
-    "8:00 AM",
-    "8:30 AM",
-    "9:00 AM",
-    "9:30 AM",
-    "10:00 AM",
-    "10:30 AM",
-    "11:00 AM",
-    "11:30 AM",
-    "12:00 PM",
-    "12:30 PM",
-    "1:00 PM",
-    "1:30 PM",
-    "2:00 PM",
-    "2:30 PM",
-    "3:00 PM",
-    "3:30 PM",
-    "4:00 PM",
-    "4:30 PM",
-    "5:00 PM",
-    "5:30 PM",
-    "6:00 PM",
-    "6:30 PM",
-    "7:00 PM",
-    "7:30 PM",
-    "8:00 PM",
-    "8:30 PM",
-    "9:00 PM",
-    "9:30 PM",
-    "10:00 PM",
-    "10:30 PM",
-    "11:00 PM",
-    "11:30 PM",
-    "12:00 AM",
-    "12:30 AM",
-    "1:00 AM",
-    "1:30 AM",
-    "2:00 AM",
-    "2:30 AM",
-    "3:00 AM",
-    "3:30 AM",
-    "4:00 AM",
-    "4:30 AM",
-    "5:00 AM",
-    "5:30 AM",
+    "6:00 am",
+    "6:30 am",
+    "7:00 am",
+    "7:30 am",
+    "8:00 am",
+    "8:30 am",
+    "9:00 am",
+    "9:30 am",
+    "10:00 am",
+    "10:30 am",
+    "11:00 am",
+    "11:30 am",
+    "12:00 pm",
+    "12:30 pm",
+    "1:00 pm",
+    "1:30 pm",
+    "2:00 pm",
+    "2:30 pm",
+    "3:00 pm",
+    "3:30 pm",
+    "4:00 pm",
+    "4:30 pm",
+    "5:00 pm",
+    "5:30 pm",
+    "6:00 pm",
+    "6:30 pm",
+    "7:00 pm",
+    "7:30 pm",
+    "8:00 pm",
+    "8:30 pm",
+    "9:00 pm",
+    "9:30 pm",
+    "10:00 pm",
+    "10:30 pm",
+    "11:00 pm",
+    "11:30 pm",
+    "12:00 am",
+    "12:30 am",
+    "1:00 am",
+    "1:30 am",
+    "2:00 am",
+    "2:30 am",
+    "3:00 am",
+    "3:30 am",
+    "4:00 am",
+    "4:30 am",
+    "5:00 am",
+    "5:30 am",
 ];
 
 const filteredSlots = ref([]);
@@ -344,58 +415,183 @@ async function onSubmitSchedule() {
     <Toast />
     <div v-if="role === 'doctor'">
         <div class="flex flex-col gap-4">
-            <Section title="Personal Information" edit>
+            <Section
+                title="Personal Information"
+                edit
+                :footer="isEditingPersonal"
+                @edit-btn="editPersonal"
+                @cancel-btn="cancelEditPersonal"
+                @save-btn="onSubmitDoctorPersonal"
+            >
                 <div class="flex flex-col gap-4">
                     <div
                         class="flex flex-col md:flex-row gap-4 md:items-center"
                     >
-                        <div>
+                        <div class="w-full h-full sm:size-54">
                             <img
                                 src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png"
                                 alt="Profile Picture"
-                                class="w-full h-full sm:size-54 border rounded-md border-color object-cover"
+                                class="w-full h-full border rounded-md border-color object-cover"
                             />
                         </div>
                         <div class="flex flex-col md:flex-grow gap-4">
-                            <div class="flex flex-col">
-                                <h6>Name</h6>
-                                <p>
-                                    {{ user.profile.first_name }}
-                                    {{ user.profile.middle_name }}
-                                    {{ user.profile.last_name }}
-                                </p>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex flex-col flex-1">
+                                    <h6>Name</h6>
+                                    <div
+                                        v-if="isEditingPersonal"
+                                        class="flex flex-col lg:flex-row gap-6 lg:gap-2 mt-2"
+                                    >
+                                        <FormField class="w-full">
+                                            <FloatLabel variant="on">
+                                                <InputText
+                                                    v-model="
+                                                        formDoctorPersonal.first_name
+                                                    "
+                                                    id="first_name"
+                                                    fluid
+                                                />
+                                                <label for="first_name"
+                                                    >First Name</label
+                                                >
+                                            </FloatLabel>
+                                        </FormField>
+                                        <FormField class="w-full">
+                                            <FloatLabel variant="on">
+                                                <InputText
+                                                    v-model="
+                                                        formDoctorPersonal.middle_name
+                                                    "
+                                                    id="middle_name"
+                                                    fluid
+                                                />
+                                                <label for="middle_name"
+                                                    >Middle Name</label
+                                                >
+                                            </FloatLabel>
+                                        </FormField>
+                                        <FormField class="w-full">
+                                            <FloatLabel variant="on">
+                                                <InputText
+                                                    v-model="
+                                                        formDoctorPersonal.last_name
+                                                    "
+                                                    id="last_name"
+                                                    fluid
+                                                />
+                                                <label for="last_name"
+                                                    >Last Name</label
+                                                >
+                                            </FloatLabel>
+                                        </FormField>
+                                    </div>
+                                    <p v-else>
+                                        {{ user.profile.first_name }}
+                                        {{ user.profile.middle_name }}
+                                        {{ user.profile.last_name }}
+                                    </p>
+                                </div>
+                                <div class="flex flex-col flex-1">
+                                    <h6>License Number</h6>
+                                    <template v-if="isEditingPersonal">
+                                        <FormField
+                                            class="mt-2 w-full xl:max-w-80"
+                                        >
+                                            <InputText
+                                                fluid
+                                                v-model="
+                                                    formDoctorPersonal.license_number
+                                                "
+                                            />
+                                        </FormField>
+                                    </template>
+                                    <p v-else>
+                                        {{
+                                            user.doctor?.license_number || "N/A"
+                                        }}
+                                    </p>
+                                </div>
                             </div>
                             <div class="flex flex-col md:flex-row gap-4">
                                 <div class="flex flex-col flex-1">
                                     <h6>Specialty</h6>
-                                    <p>
+                                    <template v-if="isEditingPersonal">
+                                        <FormField
+                                            class="mt-2 w-full xl:max-w-80"
+                                        >
+                                            <Select
+                                                v-model="
+                                                    formDoctorPersonal.doctor_specialty_id
+                                                "
+                                                :options="
+                                                    doctorSpecialtyOptions
+                                                "
+                                                optionLabel="label"
+                                                optionValue="value"
+                                                fluid
+                                            />
+                                        </FormField>
+                                    </template>
+                                    <p v-else>
                                         {{
-                                            user.profile.doctor?.specialty
-                                                ?.name || "N/A"
+                                            user.doctor.specialty?.name || "N/A"
                                         }}
                                     </p>
                                 </div>
                                 <div class="flex flex-col flex-1">
                                     <h6>Room</h6>
-                                    <p>
-                                        {{
-                                            user.profile.doctor?.room_number ||
-                                            "N/A"
-                                        }}
+                                    <template v-if="isEditingPersonal">
+                                        <FormField
+                                            class="mt-2 w-full xl:max-w-80"
+                                        >
+                                            <InputText
+                                                v-model="
+                                                    formDoctorPersonal.room_number
+                                                "
+                                                fluid
+                                            />
+                                        </FormField>
+                                    </template>
+                                    <p v-else>
+                                        {{ user.doctor?.room_number || "N/A" }}
                                     </p>
                                 </div>
                             </div>
                             <div class="flex flex-col md:flex-row gap-4">
                                 <div class="flex flex-col flex-1">
                                     <h6>Email</h6>
-                                    <p>{{ user.email }}</p>
+                                    <template v-if="isEditingPersonal">
+                                        <FormField
+                                            class="mt-2 w-full xl:max-w-80"
+                                        >
+                                            <InputText
+                                                v-model="
+                                                    formDoctorPersonal.email
+                                                "
+                                                fluid
+                                            />
+                                        </FormField>
+                                    </template>
+                                    <p v-else>{{ user.email }}</p>
                                 </div>
                                 <div class="flex flex-col flex-1">
                                     <h6>Clinic Number</h6>
-                                    <p>
+                                    <template v-if="isEditingPersonal">
+                                        <FormField
+                                            class="mt-2 w-full xl:max-w-80"
+                                        >
+                                            <InputText
+                                                v-model="
+                                                    formDoctorPersonal.clinic_phone_number
+                                                "
+                                                fluid
+                                            />
+                                        </FormField>
+                                    </template>
+                                    <p v-else>
                                         {{
-                                            user.profile.doctor
-                                                ?.clinic_phone_number || "N/A"
+                                            user.doctor?.clinic_phone_number ||
+                                            "N/A"
                                         }}
                                     </p>
                                 </div>
@@ -404,15 +600,21 @@ async function onSubmitSchedule() {
                     </div>
                     <div>
                         <h6 class="text-base!">Doctor Notes</h6>
-                        <p>{{ user.profile.doctor?.doctor_note || "N/A" }}</p>
+                        <template v-if="isEditingPersonal">
+                            <FormField class="mt-2">
+                                <Textarea
+                                    v-model="formDoctorPersonal.doctor_note"
+                                    fluid
+                                />
+                            </FormField>
+                        </template>
+                        <p v-else>
+                            {{ user.doctor?.doctor_note || "N/A" }}
+                        </p>
                     </div>
                 </div>
             </Section>
-            <Section
-                title="Schedule"
-                edit
-                @edit-clicked="editScheduleModal = true"
-            >
+            <Section title="Schedule" edit @edit-btn="editScheduleModal = true">
                 <div v-if="loading"><p>Loading schedule...</p></div>
                 <div v-else class="flex flex-col gap-4">
                     <div class="flex flex-col sm:flex-row gap-4">
