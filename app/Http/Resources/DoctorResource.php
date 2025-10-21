@@ -16,6 +16,7 @@ class DoctorResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'user_id' => $this->profile->user_id,
             'first_name' => $this->profile->first_name,
             'middle_name' => $this->profile->middle_name,
             'last_name' => $this->profile->last_name,

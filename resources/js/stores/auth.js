@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import axios from "axios";
 
 export const useAuthStore = defineStore("auth", {
     state: () => ({
@@ -29,5 +28,6 @@ export const useAuthStore = defineStore("auth", {
 
     getters: {
         isAuthenticated: (state) => !!state.user,
+        role: (state) => state.user?.role?.toLowerCase() || null,
     },
 });

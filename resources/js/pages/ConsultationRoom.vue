@@ -1,11 +1,11 @@
 <script setup>
-import { inject, computed, onMounted, ref, watch, nextTick } from "vue";
+import { inject, computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { Form } from "@primevue/forms";
 import Textarea from "primevue/textarea";
 
-import { selectedDoctor } from "@/stores/doctor";
+import { selectedRecipient } from "@/stores/chat";
 import { useConversationStore } from "@/stores/conversations";
 
 import MessageBubble from "@/components/chat/MessageBubble.vue";
@@ -17,8 +17,8 @@ const router = useRouter();
 
 const conversationStore = useConversationStore();
 
-const doctor_id = computed(() => selectedDoctor.value.id);
-const doctor_name = computed(() => selectedDoctor.value.name);
+const recipient_id = computed(() => selectedRecipient.value.id);
+const recipient_name = computed(() => selectedRecipient.value.name);
 
 const hasConversation = computed(
     () => route.params.id && route.params.id !== "new"
@@ -26,17 +26,17 @@ const hasConversation = computed(
 
 const chatInfo = inject("chatInfo");
 
-function checkSelectedDoctor() {
-    if (route.params.id === "new" && !doctor_id.value) {
+function checkSelectedRecipient() {
+    if (route.params.id === "new" && !recipient_id.value) {
         router.replace({ name: "consultation" });
     }
 }
 
-onMounted(checkSelectedDoctor);
+onMounted(checkSelectedRecipient);
 
 const conversation_id = computed(() => route.params.id);
 
-const conversation = ref({});
+const conversation = ref(null);
 
 async function fetchMyConversation() {
     loading.value = true;
@@ -46,7 +46,6 @@ async function fetchMyConversation() {
             params: { conversation_id: conversation_id.value },
         });
         conversation.value = res.data;
-        console.log(res.data);
     } catch (err) {
         const status = err.response?.status;
 
@@ -66,9 +65,29 @@ onMounted(() => {
     }
 });
 
+const groupedMessages = computed(() => {
+    if (!conversation.value?.messages) return [];
+
+    const groups = [];
+    let currentGroup = null;
+
+    for (const msg of conversation.value.messages) {
+        if (!currentGroup || currentGroup.sender !== msg.sender) {
+            currentGroup = {
+                sender: msg.sender,
+                messages: [msg],
+            };
+            groups.push(currentGroup);
+        } else {
+            currentGroup.messages.push(msg);
+        }
+    }
+    return groups;
+});
+
 const recipientName = computed(() => {
     if (!hasConversation.value) {
-        return doctor_name.value;
+        return recipient_name.value;
     } else {
         const recipient = conversation.value.recipient;
         if (recipient) {
@@ -101,10 +120,12 @@ function onEnterSubmit(event) {
     }
 }
 
+console.log("selected", recipient_id.value);
+
 async function onSubmitMessage(values) {
     const payload = {
         conversation_id: conversation_id.value,
-        doctor_id: doctor_id.value,
+        recipient_id: recipient_id.value,
         ...values.values,
     };
 
@@ -116,6 +137,12 @@ async function onSubmitMessage(values) {
         const res = await axios.post("/conversation", payload);
 
         if (!res.data.new) {
+            conversation.value.messages.push(res.data.message);
+
+            conversationStore.updateConversation(
+                conversation_id.value,
+                res.data.message
+            );
         } else {
             await conversationStore.fetchMyConversations();
             router.push({
@@ -190,12 +217,23 @@ watch(
             v-else
             class="h-0 flex-grow flex flex-col-reverse px-2 overflow-auto"
         >
-            <MessageBubble
-                v-for="message in conversation.messages"
-                :key="message.id"
-                :message="message"
-                :recipient="conversation.recipient"
-            />
+            <div
+                v-if="loading"
+                class="flex flex-col items-center justify-center text-gray-400 flex-grow"
+            >
+                <p>Loading messages...</p>
+            </div>
+            <div v-else-if="groupedMessages.length > 0">
+                <div v-for="(group, i) in groupedMessages" :key="i">
+                    <MessageBubble
+                        :sender="group.sender"
+                        :messages="group.messages"
+                    />
+                </div>
+            </div>
+            <div v-else class="text-center text-gray-400 py-6">
+                No messages yet.
+            </div>
         </div>
         <footer>
             <Form

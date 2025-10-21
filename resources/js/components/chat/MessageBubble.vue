@@ -1,15 +1,15 @@
 <script setup>
 const props = defineProps({
-    message: Object,
-    recipient: Object,
+    sender: String,
+    messages: Array,
 });
 </script>
 <template>
-    <div v-if="message.sender === 'me'" class="flex flex-col py-2 gap-1">
-        <div class="flex flex-row">
+    <div v-if="sender === 'me'" class="flex flex-col py-2 gap-1">
+        <div v-for="(msg, i) in messages" :key="msg.id" class="flex flex-row">
             <div class="flex-grow p-4"></div>
             <div class="bg-accent-color text-white p-2 rounded-md max-w-[80%]">
-                <p>{{ message.message }}</p>
+                <p>{{ msg.message }}</p>
             </div>
         </div>
     </div>
@@ -28,9 +28,11 @@ const props = defineProps({
                 </div>
                 <div class="flex flex-col gap-1 items-start">
                     <div
+                        v-for="(msg, i) in messages"
+                        :key="msg.id"
                         class="bg-gray-100 dark:bg-gray-600 text-color p-2 rounded-md"
                     >
-                        <p>{{ message.message }}</p>
+                        <p>{{ msg.message }}</p>
                     </div>
                 </div>
             </div>

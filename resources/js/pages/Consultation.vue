@@ -1,17 +1,22 @@
 <script setup>
 import { onMounted, ref, computed, provide } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 
 import Dialog from "primevue/dialog";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import InputText from "primevue/inputtext";
 
-import { storeSelectedDoctor, resetSelectedDoctor } from "@/stores/doctor";
+import { storeSelectedRecipient, resetSelectedRecipient } from "@/stores/chat";
 import { useConversationStore } from "@/stores/conversations";
+import { useAuthStore } from "@/stores/auth";
 
 import CardChat from "@/components/chat/CardChat.vue";
-import CardDoctor from "@/components/chat/CardDoctor.vue";
+import CardRecipient from "@/components/chat/CardRecipient.vue";
+
+const auth = useAuthStore();
+const { role } = storeToRefs(auth);
 
 const route = useRoute();
 const router = useRouter();
@@ -22,34 +27,50 @@ const newChatModal = ref(false);
 const chatInfo = ref(false);
 provide("chatInfo", chatInfo);
 
-const doctors = ref([]);
-async function fetchDoctors() {
+const recipients = ref([]);
+async function fetchRecipients() {
     try {
-        const res = await axios.get("/api/doctors");
-        doctors.value = res.data.data;
+        let url = "";
+
+        // decide which API to call depending on role
+        switch (role.value) {
+            case "patient":
+                url = "/api/doctors"; // patients can message doctors
+                break;
+            case "staff":
+                url = "/users"; // staff can message general users or patients
+                break;
+            case "doctor":
+                url = "/api/staffs"; // optional: if doctors can message patients
+                break;
+            default:
+                url = "/users"; // fallback
+        }
+
+        const res = await axios.get(url);
+        recipients.value = res.data.data;
     } catch (err) {
         console.error(err);
-    } finally {
     }
 }
 
-onMounted(fetchDoctors);
+onMounted(fetchRecipients);
 
-async function selectDoctor(doctor) {
+async function selectRecipient(recipient) {
     try {
         const res = await axios.get("/conversation", {
-            params: { doctor_id: doctor.id },
+            params: { recipient_id: recipient.user_id },
         });
 
         if (res.data.exists) {
-            resetSelectedDoctor();
+            resetSelectedRecipient();
 
             router.push({
                 name: "consultation-room",
                 params: { id: res.data.ref_id },
             });
         } else {
-            storeSelectedDoctor(doctor);
+            storeSelectedRecipient(recipient);
 
             router.push({
                 name: "consultation-room",
@@ -130,12 +151,13 @@ onMounted(() => {
                 <InputText placeholder="Search" fluid />
             </IconField>
             <div class="flex flex-col h-full overflow-auto">
-                <CardDoctor
-                    v-for="doctor in doctors"
-                    :key="doctor.id"
-                    :name="'Dr. ' + doctor.first_name + ' ' + doctor.last_name"
-                    :specialty="doctor.specialty.name"
-                    @click="selectDoctor(doctor)"
+                <CardRecipient
+                    v-for="recipient in recipients"
+                    :key="recipient.id"
+                    :name="recipient.first_name + ' ' + recipient.last_name"
+                    :specialty="recipient.specialty"
+                    :show-specialty="role === 'patient'"
+                    @click="selectRecipient(recipient)"
                 />
             </div>
         </div>

@@ -1,7 +1,17 @@
 <script setup>
 defineProps({
-    name: String,
-    specialty: String,
+    name: {
+        type: String,
+        required: true,
+    },
+    specialty: {
+        type: [String, Object],
+        default: null,
+    },
+    showSpecialty: {
+        type: Boolean,
+        default: false,
+    },
     img_profile: {
         type: String,
         default:
@@ -28,7 +38,9 @@ defineProps({
         </div>
         <div class="flex flex-col items-start">
             <h6 class="font-medium">{{ name }}</h6>
-            <p class="text-gray-500">{{ specialty }}</p>
+            <p v-if="showSpecialty && specialty" class="text-gray-500">
+                {{ typeof specialty === "object" ? specialty.name : specialty }}
+            </p>
         </div>
     </Button>
 </template>

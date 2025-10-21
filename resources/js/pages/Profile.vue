@@ -22,8 +22,7 @@ const toast = useAppToast();
 
 const auth = useAuthStore();
 const { user } = storeToRefs(auth);
-
-const role = computed(() => user.value?.role.toLowerCase() || "");
+const { role } = storeToRefs(auth);
 
 const isEditingPersonal = ref(false);
 

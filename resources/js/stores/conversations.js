@@ -9,5 +9,18 @@ export const useConversationStore = defineStore("conversation", {
             const res = await axios.get("/conversations");
             this.list = res.data.data;
         },
+        updateConversation(refId, latestMessage) {
+            this.$patch((state) => {
+                const index = state.list.findIndex((c) => c.ref_id === refId);
+
+                if (index === -1) return;
+
+                const convo = state.list[index];
+                convo.last_message = latestMessage;
+
+                state.list.splice(index, 1);
+                state.list.unshift(convo);
+            });
+        },
     },
 });

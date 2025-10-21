@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Hidehalo\Nanoid\Client;
 
+use App\Models\User;
 use App\Models\Conversation;
 use App\Models\ConversationMessage;
 use App\Models\Doctor;
@@ -18,18 +19,15 @@ class ConversationController extends Controller
     public function findConversation(Request $request)
     {
         $user = Auth::user();
-        $doctor_id = $request->doctor_id;
+        $recipient_id = $request->recipient_id;
 
-        $doctor = Doctor::with('profile')->findOrFail($doctor_id);
-        $doctor_user_id = $doctor->profile->user_id;
+        $recipient = User::findOrFail($recipient_id);
 
-        $conversation = Conversation::whereHas('participants', function ($q) use ($user) {
-            $q->where('users.id', $user->id);
-        })
-            ->whereHas('participants', function ($q) use ($doctor_user_id) {
-                $q->where('users.id', $doctor_user_id);
-            })
-            ->first();
+        $conversation = Conversation::with('participants')
+        ->whereHas('participants', fn ($q) => $q->where('users.id', $user->id))
+        ->whereHas('participants', fn ($q) => $q->where('users.id', $recipient_id))
+        ->first();
+
 
         if (!$conversation) {
             return response()->json([
@@ -75,7 +73,7 @@ class ConversationController extends Controller
         $conversation = Conversation::where('ref_id', $conversation_id)
          ->with(['participants',
                 'messages' => function ($query) {
-                    $query->orderBy('created_at', 'desc'); // oldest first
+                    $query->orderBy('created_at', 'asc');
                 }]) // eager load
          ->first();
 
@@ -121,7 +119,7 @@ class ConversationController extends Controller
         $validated = $request->validate([
             "conversation_id" => "required|string",
             "message" => "required|string",
-            "doctor_id" => "nullable|integer|exists:doctors,id",
+            "recipient_id" => "nullable|integer|exists:users,id",
         ]);
 
         $user = Auth::user();
@@ -134,16 +132,15 @@ class ConversationController extends Controller
             $conversation = Conversation::where('ref_id', $conversation_id)->firstOrFail();
         } else {
             $nanoid = new Client();
-            $doctor_id = $validated["doctor_id"];
-            $doctor = Doctor::with('profile')->findOrFail($doctor_id);
-            $doctor_user_id = $doctor->profile->user_id;
             $ref_id = $nanoid->generateId(10);
+            $recipient_id = $validated["recipient_id"];
+            $recipient = User::findOrFail($recipient_id);
 
             $conversation = Conversation::create([
                 "ref_id" => $ref_id,
             ]);
 
-            $conversation->participants()->syncWithoutDetaching([$user->id, $doctor_user_id]);
+            $conversation->participants()->syncWithoutDetaching([$user->id, $recipient->id]);
         }
 
         $newMessage = $conversation->messages()->create([
@@ -158,6 +155,7 @@ class ConversationController extends Controller
         return response()->json([
             "new" => $conversation_id === "new",
             "ref_id" => $conversation->ref_id,
+             "message" => new ConversationMessageResource($newMessage),
        ]);
 
     }
