@@ -4,9 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Doctor;
+use App\Http\Resources\DoctorResource;
 
-class DoctorProfileController extends Controller
+class DoctorController extends Controller
 {
+    public function index()
+    {
+        $doctors = Doctor::with(['profile', 'specialty'])->get();
+        return DoctorResource::collection($doctors);
+    }
+
     public function update(Request $request)
     {
         $user = Auth::user();

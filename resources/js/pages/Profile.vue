@@ -78,7 +78,7 @@ async function cancelEditPersonal() {
     isEditingPersonal.value = false;
 }
 
-async function onSubmitDoctorPersonal() {
+async function onUpdateDoctorPersonal() {
     try {
         const response = await axios.put(
             "/doctor/profile",
@@ -421,7 +421,7 @@ async function onSubmitSchedule() {
                 :footer="isEditingPersonal"
                 @edit-btn="editPersonal"
                 @cancel-btn="cancelEditPersonal"
-                @save-btn="onSubmitDoctorPersonal"
+                @save-btn="onUpdateDoctorPersonal"
             >
                 <div class="flex flex-col gap-4">
                     <div

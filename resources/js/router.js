@@ -53,6 +53,14 @@ const routes = [
             },
             // PATIENTS,
             {
+                path: "doctors",
+                name: "doctors",
+                component: () => import("@/pages/Doctors.vue"),
+                meta: {
+                    title: "Doctors",
+                },
+            },
+            {
                 path: "appointments",
                 name: "appointments",
                 component: () => import("@/pages/Appointments.vue"),
@@ -101,7 +109,20 @@ const routes = [
                 component: () => import("@/pages/Consultation.vue"),
                 meta: {
                     title: "Consultation",
+                    parentClass: "h-screen",
+                    mainClass: "p-0! h-full",
+                    collapsedSidebar: true,
                 },
+                children: [
+                    {
+                        path: "c/:id",
+                        name: "consultation-room",
+                        component: () => import("@/pages/ConsultationRoom.vue"),
+                        meta: {
+                            collapsedSidebar: true,
+                        },
+                    },
+                ],
             },
         ],
     },

@@ -6,8 +6,9 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\DoctorProfileController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\ConversationController;
 
 Route::get('/', function () {
     return view('home');
@@ -55,8 +56,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/users', [UserController::class, 'store']);
     Route::post('/doctor/schedule', [ScheduleController::class, 'store']);
     Route::get('/doctor/schedule', [ScheduleController::class, 'mySchedule']);
-    Route::put('/doctor/profile', [DoctorProfileController::class, 'update']);
+    Route::put('/doctor/profile', [DoctorController::class, 'update']);
     Route::post('/appointment', [AppointmentController::class, 'store']);
+    Route::get('/appointments', [AppointmentController::class, 'myAppointments']);
+    Route::get('/conversation', [ConversationController::class, 'findConversation']);
+    Route::post('/conversation', [ConversationController::class, 'store']);
+    Route::get('/my-conversation', [ConversationController::class, 'myConversation']);
+    Route::get('/conversations', [ConversationController::class, 'myConversations']);
 });
 
 Route::get('/force-logout', function () {

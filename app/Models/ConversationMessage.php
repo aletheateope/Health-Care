@@ -13,6 +13,8 @@ class ConversationMessage extends Model
         'file_path',
     ];
 
+    protected $dates = ['created_at', 'updated_at'];
+
     public function conversation()
     {
         return $this->belongsTo(Conversation::class);

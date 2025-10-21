@@ -18,6 +18,7 @@ import { formatDate } from "@/utils/date";
 import { useAppToast } from "@/utils/toast";
 
 const toast = useAppToast();
+const loading = ref(false);
 
 const appointmentTypes = ref("upcoming");
 
@@ -27,25 +28,21 @@ const tabItems = [
     { label: "History", value: "history" },
 ];
 
-// const appointments = ref([]);
+const appointments = ref([]);
 
-// onMounted(async () => {
-//     try {
-//         const response = await axios.get("/appointments");
-//         appointments.value = response.data.data;
-//     } catch (error) {
-//         console.error(error);
-//     }
-// });
+async function fetchMyAppointments() {
+    loading.value = true;
+    try {
+        const response = await axios.get("/appointments");
+        appointments.value = response.data.data;
+    } catch (err) {
+        console.log(err);
+    } finally {
+        loading.value = false;
+    }
+}
 
-const appointments = [
-    {
-        dateTime: "January 1, 2024 - 8:00 AM",
-        doctor: "Dr. John Doe",
-        appointmentType: "Consultation",
-        room: "Room 1",
-    },
-];
+onMounted(fetchMyAppointments);
 
 const menu = ref();
 
@@ -197,6 +194,7 @@ async function onSubmit() {
         toast.success("Appointment created successfully.");
         addAppointmentModal.value = false;
         fetchDoctorAvailableTimeSlots();
+        fetchMyAppointments();
     } catch (err) {
         console.log(err);
         console.error(err.response?.data || err);
@@ -237,15 +235,38 @@ async function onSubmit() {
         </div>
         <DataTable
             :value="appointments"
+            :loading="loading"
             scrollable
             scrollHeight="100%"
             tableStyle="width: 100%"
             class="flex-grow overflow-hidden h-20"
         >
-            <Column field="dateTime" header="Date and Time"></Column>
-            <Column field="doctor" header="Doctor"></Column>
-            <Column field="appointmentType" header="Appointment Type"></Column>
-            <Column field="room" header="Room"></Column>
+            <Column field="dateTime" header="Date and Time">
+                <template #body="{ data }">
+                    {{ data.start_date }}
+                </template>
+            </Column>
+            <Column field="doctor" header="Doctor">
+                <template #body="{ data }">
+                    Dr.
+                    {{ data.doctor.first_name }}
+                    {{ data.doctor.last_name }}
+                </template>
+            </Column>
+            <Column field="appointmentType" header="Appointment Type">
+                <template #body="{ data }">
+                    {{ data.service.name }}
+                </template>
+            </Column>
+            <Column field="room" header="Room">
+                <template #body="{ data }">
+                    <p v-if="data.appointment_type === 'online'">Online</p>
+                    <p v-else-if="data.appointment_type === 'walk-in'">
+                        {{ data.doctor.room_number }}
+                    </p>
+                    <p v-else>---</p>
+                </template>
+            </Column>
             <Column class="w-30">
                 <template #header>
                     <div class="flex-1 text-center p-datatable-column-title">

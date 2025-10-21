@@ -12,9 +12,30 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\PatientHmo;
 use App\Models\Insurance;
 use App\Models\PatientInsurance;
+use App\Http\Resources\AppointmentResource;
 
 class AppointmentController extends Controller
 {
+    public function myAppointments()
+    {
+        $patient = Auth::user()->profile->patient;
+
+        if (!$patient) {
+            return response()->json(['message' => 'Patient not found'], 404);
+        }
+
+        $now = Carbon::now();
+
+
+        $appointments = $patient->appointments()
+        ->with('service', 'doctor.profile', 'patientHmo')
+        ->where('start_date', '>=', $now)
+        ->orderBy('start_date', 'asc')
+        ->get();
+
+        return AppointmentResource::collection($appointments);
+    }
+
     public function getAvailableTimes(Request $request)
     {
 
@@ -37,19 +58,11 @@ class AppointmentController extends Controller
             return response()->json([]);
         }
 
-        // Map service to specialty
-        $serviceToSpecialty = [
-            1  => 1,
-            12 => 4,
-            13 => 3,
-            14 => 5,
-        ];
+        $specialty_id = serviceToSpecialty($service_id);
 
-        if (!isset($serviceToSpecialty[$service_id])) {
+        if (!$specialty_id) {
             return response()->json(['error' => 'Service not found']);
         }
-
-        $specialty_id = $serviceToSpecialty[$service_id];
 
         $doctorQuery = Doctor::where('doctor_specialty_id', $specialty_id);
 
@@ -126,18 +139,12 @@ class AppointmentController extends Controller
         $insurance = $validated['insurance'];
         $insurance_number = $validated['insurance_number'];
 
-        $serviceToSpecialty = [
-            1  => 1,
-            12 => 4,
-            13 => 3,
-            14 => 5,
-        ];
 
-        if (!isset($serviceToSpecialty[$service_id])) {
-            return response()->json(['error' => 'Service not supported for booking'], 422);
+        $specialty_id = serviceToSpecialty($service_id);
+
+        if (!$specialty_id) {
+            return response()->json(['error' => 'Service not found']);
         }
-
-        $specialty_id = $serviceToSpecialty[$service_id];
 
         $doctorQuery = Doctor::where('doctor_specialty_id', $specialty_id);
 
