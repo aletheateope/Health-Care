@@ -52,8 +52,8 @@ Route::middleware(['auth'])->prefix('portal')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/user', [UserController::class, 'currentUser']);
+    Route::post('/user', [UserController::class, 'store']);
     Route::get('/users', [UserController::class, 'index']);
-    Route::post('/users', [UserController::class, 'store']);
     Route::post('/doctor/schedule', [ScheduleController::class, 'store']);
     Route::get('/doctor/schedule', [ScheduleController::class, 'mySchedule']);
     Route::put('/doctor/profile', [DoctorController::class, 'update']);

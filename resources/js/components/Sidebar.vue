@@ -80,6 +80,28 @@ const sidebarItems = {
             route: "billing",
         },
     ],
+    staff: [
+        {
+            label: "Dashboard",
+            icon: "pi pi-th-large",
+            route: "dashboard",
+        },
+        {
+            label: "Test Requests",
+            icon: "pi pi-calendar",
+            route: "test-requests",
+        },
+        {
+            label: "Patients",
+            icon: "pi pi-address-book",
+            route: "patients",
+        },
+        {
+            label: "Consultation",
+            icon: "pi pi-comment",
+            route: "consultation",
+        },
+    ],
 };
 
 const navItems = computed(() => {
@@ -126,13 +148,12 @@ const sidebarWidth = computed(() =>
                                 class="rounded-full w-9 h-9 object-cover border border-color"
                             />
                             <span
-                                v-if="user?.profile"
                                 class="p-button-label truncate"
                                 :class="{
                                     'font-bold!': isActive('profile'),
                                 }"
-                                >{{ user?.profile?.first_name }}
-                                {{ user?.profile?.last_name }}</span
+                                >{{ user?.first_name }}
+                                {{ user?.last_name }}</span
                             >
                         </Button>
                     </RouterLink>

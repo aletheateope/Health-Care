@@ -21,6 +21,7 @@ const routes = [
                 name: "users",
                 component: () => import("@/pages/Users.vue"),
                 meta: {
+                    roles: ["admin"],
                     title: "Users",
                     parentClass: "h-screen",
                     mainClass: "h-full",
@@ -32,31 +33,31 @@ const routes = [
                 name: "schedules",
                 component: () => import("@/pages/Schedules.vue"),
                 meta: {
+                    roles: ["doctor"],
                     title: "Schedules",
+                    parentClass: "h-screen",
+                    mainClass: "h-full",
                 },
             },
-            {
-                path: "patients",
-                name: "patients",
-                component: () => import("@/pages/Patients.vue"),
-                meta: {
-                    title: "Patients",
-                },
-            },
+
             {
                 path: "prescriptions",
                 name: "prescriptions",
                 component: () => import("@/pages/Prescriptions.vue"),
                 meta: {
+                    roles: ["doctor"],
                     title: "Prescriptions",
+                    parentClass: "h-screen",
+                    mainClass: "h-full",
                 },
             },
-            // PATIENTS,
+            // PATIENT
             {
                 path: "doctors",
                 name: "doctors",
                 component: () => import("@/pages/Doctors.vue"),
                 meta: {
+                    roles: ["patient"],
                     title: "Doctors",
                 },
             },
@@ -65,6 +66,7 @@ const routes = [
                 name: "appointments",
                 component: () => import("@/pages/Appointments.vue"),
                 meta: {
+                    roles: ["patient"],
                     title: "Appointments",
                     parentClass: "h-screen",
                     mainClass: "h-full",
@@ -75,6 +77,7 @@ const routes = [
                 name: "doctor-appointment",
                 component: () => import("@/pages/DoctorAppointment.vue"),
                 meta: {
+                    roles: ["patient"],
                     title: "Doctor Appointment",
                 },
             },
@@ -83,7 +86,10 @@ const routes = [
                 name: "medical-records",
                 component: () => import("@/pages/MedicalRecords.vue"),
                 meta: {
+                    roles: ["patient"],
                     title: "Medical Records",
+                    parentClass: "h-screen",
+                    mainClass: "h-full",
                 },
             },
             {
@@ -91,7 +97,20 @@ const routes = [
                 name: "billing",
                 component: () => import("@/pages/Billing.vue"),
                 meta: {
+                    roles: ["patient"],
                     title: "Billing",
+                    parentClass: "h-screen",
+                    mainClass: "h-full",
+                },
+            },
+            // STAFFS
+            {
+                path: "test-requests",
+                name: "test-requests",
+                component: () => import("@/pages/TestRequests.vue"),
+                meta: {
+                    roles: ["staff"],
+                    title: "Test Requests",
                 },
             },
             // SHARED
@@ -124,6 +143,17 @@ const routes = [
                     },
                 ],
             },
+            {
+                path: "patients",
+                name: "patients",
+                component: () => import("@/pages/Patients.vue"),
+                meta: {
+                    roles: ["doctor", "staff"],
+                    title: "Patients",
+                    parentClass: "h-screen",
+                    mainClass: "h-full",
+                },
+            },
         ],
     },
     {
@@ -139,4 +169,32 @@ const router = createRouter({
     routes,
 });
 
+import { useAuthStore } from "@/stores/auth";
+
+router.beforeEach(async (to, from, next) => {
+    const auth = useAuthStore();
+
+    // Set page title
+    const nearestWithTitle = to.matched
+        .slice()
+        .reverse()
+        .find((r) => r.meta?.title);
+    document.title = nearestWithTitle?.meta.title || "Laravel";
+
+    // Check if route requires roles
+    const requiredRoles = to.meta.roles;
+    if (requiredRoles) {
+        if (!auth.isAuthenticated) {
+            // Not logged in → redirect to login
+            return next({ path: "/login" });
+        }
+
+        const userRole = auth.role;
+        if (!requiredRoles.includes(userRole)) {
+            // Logged in but wrong role → redirect to not authorized or dashboard
+            return next({ name: "dashboard" });
+        }
+    }
+    next();
+});
 export default router;

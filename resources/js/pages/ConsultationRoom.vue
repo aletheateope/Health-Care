@@ -59,12 +59,6 @@ async function fetchMyConversation() {
     }
 }
 
-onMounted(() => {
-    if (hasConversation.value) {
-        fetchMyConversation();
-    }
-});
-
 const groupedMessages = computed(() => {
     if (!conversation.value?.messages) return [];
 
@@ -120,8 +114,6 @@ function onEnterSubmit(event) {
     }
 }
 
-console.log("selected", recipient_id.value);
-
 async function onSubmitMessage(values) {
     const payload = {
         conversation_id: conversation_id.value,
@@ -159,10 +151,9 @@ async function onSubmitMessage(values) {
 
 watch(
     () => route.params.id,
-    (newId) => {
-        if (newId && newId !== "new") {
-            fetchMyConversation();
-        }
+    (id) => {
+        if (!id || id === "new") return;
+        fetchMyConversation();
     },
     { immediate: true }
 );

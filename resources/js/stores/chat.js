@@ -8,8 +8,9 @@ const defaultRecipient = {
 export const selectedRecipient = ref({ ...defaultRecipient });
 
 export function storeSelectedRecipient(recipient) {
+    const recipient_id = recipient.user_id ?? recipient.id;
     selectedRecipient.value = {
-        id: recipient.user_id,
+        id: recipient_id,
         name: `${recipient.first_name} ${recipient.last_name}`,
     };
 }

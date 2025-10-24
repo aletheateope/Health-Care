@@ -57,9 +57,11 @@ async function fetchRecipients() {
 onMounted(fetchRecipients);
 
 async function selectRecipient(recipient) {
+    const recipient_id = recipient.user_id ?? recipient.id;
+
     try {
         const res = await axios.get("/conversation", {
-            params: { recipient_id: recipient.user_id },
+            params: { recipient_id: recipient_id },
         });
 
         if (res.data.exists) {
@@ -70,7 +72,10 @@ async function selectRecipient(recipient) {
                 params: { id: res.data.ref_id },
             });
         } else {
-            storeSelectedRecipient(recipient);
+            storeSelectedRecipient({
+                ...recipient,
+                user_id: recipient_id,
+            });
 
             router.push({
                 name: "consultation-room",
@@ -145,7 +150,12 @@ onMounted(() => {
         class="create-msg-modal w-[98%] sm:w-[60%] md:w-[40%] h-[70%]"
     >
         <div class="flex flex-col gap-4 h-full">
-            <h6>Doctors</h6>
+            <h6>
+                <template v-if="role === 'patient'">Doctors</template>
+                <template v-else-if="role === 'staff'">Recipients</template>
+                <template v-else-if="role === 'doctor'">Staffs</template>
+                <template v-else>Users</template>
+            </h6>
             <IconField>
                 <InputIcon class="pi pi-search" />
                 <InputText placeholder="Search" fluid />

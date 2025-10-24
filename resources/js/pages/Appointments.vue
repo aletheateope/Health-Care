@@ -215,17 +215,29 @@ async function onSubmit() {
         border-end-end-radius: 0 !important;
     }
 }
+
+@media (min-width: 640px) {
+    .appointment-tab.p-selectbutton-fluid {
+        width: auto;
+        .p-togglebutton {
+            flex: 0 0 auto;
+        }
+    }
+}
 </style>
 
 <template>
     <Toast />
     <section class="flex flex-col gap-8 h-full" id="appointments-section">
-        <div class="flex justify-between">
+        <div class="flex flex-col sm:flex-row justify-between gap-6">
             <SelectButton
                 v-model="appointmentTypes"
+                :allowEmpty="false"
                 :options="tabItems"
                 optionLabel="label"
                 optionValue="value"
+                class="appointment-tab"
+                fluid
             />
             <Button
                 icon="pi pi-plus"
@@ -233,68 +245,72 @@ async function onSubmit() {
                 @click="addAppointmentModal = true"
             />
         </div>
-        <DataTable
-            :value="appointments"
-            :loading="loading"
-            scrollable
-            scrollHeight="100%"
-            tableStyle="width: 100%"
-            class="flex-grow overflow-hidden h-20"
-        >
-            <Column field="dateTime" header="Date and Time">
-                <template #body="{ data }">
-                    {{ data.start_date }}
-                </template>
-            </Column>
-            <Column field="doctor" header="Doctor">
-                <template #body="{ data }">
-                    Dr.
-                    {{ data.doctor.first_name }}
-                    {{ data.doctor.last_name }}
-                </template>
-            </Column>
-            <Column field="appointmentType" header="Appointment Type">
-                <template #body="{ data }">
-                    {{ data.service.name }}
-                </template>
-            </Column>
-            <Column field="room" header="Room">
-                <template #body="{ data }">
-                    <p v-if="data.appointment_type === 'online'">Online</p>
-                    <p v-else-if="data.appointment_type === 'walk-in'">
-                        {{ data.doctor.room_number }}
-                    </p>
-                    <p v-else>---</p>
-                </template>
-            </Column>
-            <Column class="w-30">
-                <template #header>
-                    <div class="flex-1 text-center p-datatable-column-title">
-                        Action
-                    </div>
-                </template>
-                <template #body="{ data }">
-                    <div class="text-center">
-                        <Button
-                            icon="pi pi-ellipsis-v"
-                            aria-label="More"
-                            severity="secondary"
-                            variant="text"
-                            aria-haspopup="true"
-                            aria-controls="more"
-                            @click="moreMenu"
-                        />
-                        <TieredMenu
-                            ref="menu"
-                            id="more"
-                            :model="menuItems"
-                            popup
-                            appendTo="#appointments-section"
-                        />
-                    </div>
-                </template>
-            </Column>
-        </DataTable>
+        <div class="flex flex-col flex-grow">
+            <DataTable
+                :value="appointments"
+                :loading="loading"
+                scrollable
+                tableStyle="width: 100%"
+                scrollHeight="100%"
+                class="flex-grow h-0"
+            >
+                <Column field="dateTime" header="Date and Time">
+                    <template #body="{ data }">
+                        {{ data.start_date }}
+                    </template>
+                </Column>
+                <Column field="doctor" header="Doctor">
+                    <template #body="{ data }">
+                        Dr.
+                        {{ data.doctor.first_name }}
+                        {{ data.doctor.last_name }}
+                    </template>
+                </Column>
+                <Column field="appointmentType" header="Appointment Type">
+                    <template #body="{ data }">
+                        {{ data.service.name }}
+                    </template>
+                </Column>
+                <Column field="room" header="Room">
+                    <template #body="{ data }">
+                        <p v-if="data.appointment_type === 'online'">Online</p>
+                        <p v-else-if="data.appointment_type === 'walk-in'">
+                            {{ data.doctor.room_number }}
+                        </p>
+                        <p v-else>---</p>
+                    </template>
+                </Column>
+                <Column class="w-30">
+                    <template #header>
+                        <div
+                            class="flex-1 text-center p-datatable-column-title"
+                        >
+                            Action
+                        </div>
+                    </template>
+                    <template #body="{ data }">
+                        <div class="text-center">
+                            <Button
+                                icon="pi pi-ellipsis-v"
+                                aria-label="More"
+                                severity="secondary"
+                                variant="text"
+                                aria-haspopup="true"
+                                aria-controls="more"
+                                @click="moreMenu"
+                            />
+                            <TieredMenu
+                                ref="menu"
+                                id="more"
+                                :model="menuItems"
+                                popup
+                                appendTo="#appointments-section"
+                            />
+                        </div>
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
     </section>
     <Dialog
         v-model:visible="addAppointmentModal"

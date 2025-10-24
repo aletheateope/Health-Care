@@ -32,13 +32,13 @@ const emit = defineEmits(["edit-btn", "cancel-btn", "save-btn"]);
             />
         </header>
         <slot />
-        <div v-if="footer" class="flex flex-row justify-end gap-4">
+        <footer v-if="footer" class="flex flex-row justify-end gap-4">
             <Button
                 label="Cancel"
                 severity="secondary"
                 @click="emit('cancel-btn')"
             />
             <Button label="Save" @click="emit('save-btn')" />
-        </div>
+        </footer>
     </section>
 </template>

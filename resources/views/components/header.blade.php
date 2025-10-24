@@ -8,7 +8,7 @@ $links = [
 ];
 @endphp
 
-<header class="flex items-center justify-between py-6 px-6 sticky top-0 bg-color">
+<header class="flex items-center justify-between py-6 px-6 sticky top-0 bg-color {{ $class }}">
     <a href="/" class="flex items-center gap-4">
         <i class="pi pi-sparkles border rounded-full p-2 bg-teal-800 text-emerald-100 hidden! md:block!"
             style="font-size: 24px"></i>

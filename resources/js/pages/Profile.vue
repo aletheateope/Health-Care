@@ -21,8 +21,8 @@ import { useAppToast } from "@/utils/toast";
 const toast = useAppToast();
 
 const auth = useAuthStore();
-const { user } = storeToRefs(auth);
-const { role } = storeToRefs(auth);
+const { user, role } = storeToRefs(auth);
+// const { role } = storeToRefs(auth);
 
 const isEditingPersonal = ref(false);
 
@@ -56,7 +56,7 @@ async function fetchDoctorSpecialties() {
 onMounted(fetchDoctorSpecialties);
 
 async function editPersonal() {
-    const profile = user.value?.profile;
+    const profile = user?.value;
     const doctor = user.value?.doctor;
 
     formDoctorPersonal.value = {
@@ -485,9 +485,9 @@ async function onSubmitSchedule() {
                                         </FormField>
                                     </div>
                                     <p v-else>
-                                        {{ user.profile.first_name }}
-                                        {{ user.profile.middle_name }}
-                                        {{ user.profile.last_name }}
+                                        {{ user.first_name }}
+                                        {{ user.middle_name }}
+                                        {{ user.last_name }}
                                     </p>
                                 </div>
                                 <div class="flex flex-col flex-1">

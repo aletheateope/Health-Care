@@ -12,8 +12,8 @@
 
 <body>
     @if ($showHero)
-    <div class="flex flex-col md:h-screen mb-22">
-        <x-header></x-header>
+    <x-header />
+    <div class="flex md:h-[calc(100vh-90px)] mb-22">
         <section
             style="background-image: linear-gradient(rgba(6, 39, 35, 0.5),rgba(20, 184, 166, 0.5)), url('{{ asset('img/hero-section_bg.jpg') }}')"
             class="flex flex-col lg:flex-row flex-grow text-white p-12 md:p-24 bg-no-repeat items-center bg-position-[20%] bg-cover xl:bg-size-[150%] md:bg-left lg:bg-size-[140%]">
@@ -43,9 +43,9 @@
         </section>
     </div>
     @else
-    <x-header></x-header>
+    <x-header />
     @endif
-    <main class="flex flex-col gap-40 sm:px-12 sm:py-8 lg:px-24 lg:py-12">
+    <main class="flex flex-col gap-40 p-2 sm:px-12 sm:py-8 lg:px-24 lg:py-12 2xl:px-48">
         {{ $slot }}
     </main>
     <footer id="vue-footer"></footer>

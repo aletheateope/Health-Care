@@ -19,7 +19,6 @@ async function bootstrap() {
     const pinia = createPinia();
 
     app.use(pinia);
-    app.use(router);
 
     const MyPreset = definePreset(Aura, {
         semantic: {
@@ -53,6 +52,7 @@ async function bootstrap() {
         console.error("Failed to fetch user:", e);
     }
 
+    app.use(router);
     app.mount("#app");
 }
 

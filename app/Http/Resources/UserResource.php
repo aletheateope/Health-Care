@@ -19,20 +19,18 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'role' => ucfirst($this->role),
-            "profile" => $this->whenLoaded('profile', function () {
-                return [
-                    'first_name' => $this->profile->first_name,
-                    'middle_name' => $this->profile->middle_name,
-                    'last_name' => $this->profile->last_name,
-                    "date_of_birth" => $this->profile->date_of_birth,
-                    "gender" => $this->profile->gender,
-                    "phone" => $this->profile->phone,
-                    "contact_email" => $this->profile->contact_email,
-                ];
-            }),
         ];
 
         if ($this->relationLoaded('profile') && $this->profile) {
+            $data['first_name'] = $this->profile->first_name;
+            $data['middle_name'] = $this->profile->middle_name;
+            $data['last_name'] = $this->profile->last_name;
+            $data['date_of_birth'] = $this->profile->date_of_birth;
+            $data['gender'] = $this->profile->gender;
+            $data['phone'] = $this->profile->phone;
+            $data['contact_email'] = $this->profile->contact_email;
+
+
             if ($this->profile->relationLoaded('doctor') && $this->profile->doctor) {
                 $data['doctor'] = [
                     'id' => $this->profile->doctor->id,
