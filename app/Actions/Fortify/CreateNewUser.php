@@ -43,7 +43,7 @@ class CreateNewUser implements CreatesNewUsers
             'role' => $input['role'] ?? 'patient',
         ]);
 
-        $user->profile()->create([
+        $profile = $user->profile()->create([
             'first_name' => $input['first_name'],
             'middle_name' => $input['middle_name'] ?? null,
             'last_name' => $input['last_name'],
@@ -52,6 +52,11 @@ class CreateNewUser implements CreatesNewUsers
             'phone_number' => $input['phone_number'],
             'contact_email'=> $input['email'],
         ]);
+
+        if (in_array($input['role'], ['doctor', 'staff', 'patient'])) {
+            $relation = $input['role'];
+            $profile->{$relation}()->create([]);
+        }
 
         return $user;
     }

@@ -4,9 +4,9 @@ import Aura from "@primeuix/themes/aura";
 import { definePreset } from "@primeuix/themes";
 
 import Button from "@/components/mpa/Button.vue";
-
 import RegisterForm from "@/components/mpa/RegisterForm.vue";
 import LoginForm from "@/components/mpa/LoginForm.vue";
+import Sidebar from "@/components/mpa/Sidebar.vue";
 
 const MyPreset = definePreset(Aura, {
     semantic: {
@@ -30,6 +30,7 @@ const components = {
     Button,
     RegisterForm,
     LoginForm,
+    Sidebar,
 };
 
 document.querySelectorAll("[data-vue]").forEach((el) => {

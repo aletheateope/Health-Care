@@ -56,15 +56,15 @@ onMounted(async () => {
     }
 });
 
-const menu = ref();
+const menu = ref([]);
 
 const menuItems = ref([
     { label: "Edit", icon: "pi pi-pen-to-square" },
     { label: "Delete", icon: "pi pi-trash" },
 ]);
 
-const moreMenu = (event) => {
-    menu.value.toggle(event);
+const toggleMenu = (event, i) => {
+    menu.value[i].toggle(event);
 };
 
 const errors = ref({});
@@ -72,7 +72,7 @@ const errors = ref({});
 async function onSubmit({ values }) {
     errors.value = {};
     try {
-        const response = await axios.post("/users", values);
+        const response = await axios.post("/user", values);
         toast.success("User added successfully.");
         addUserModal.value = false;
 
@@ -91,81 +91,107 @@ function clearError(field) {
 }
 </script>
 
+<style>
+@media (min-width: 640px) {
+    .user-tab.p-selectbutton-fluid {
+        width: auto;
+        .p-togglebutton {
+            flex: 0 0 auto;
+        }
+    }
+}
+</style>
+
 <template>
     <Toast />
     <section class="flex flex-col gap-8 h-full" id="users-section">
-        <div class="flex justify-between">
+        <header class="flex flex-col sm:flex-row gap-6">
             <SelectButton
                 v-model="userTypes"
                 :options="tabItems"
+                :allowEmpty="false"
                 optionLabel="label"
                 optionValue="value"
+                class="user-tab"
+                fluid
             />
+        </header>
+        <div class="flex flex-col sm:flex-row gap-6">
+            <IconField class="flex-grow">
+                <InputIcon class="pi pi-search" />
+                <InputText placeholder="Search" fluid />
+            </IconField>
             <Button
                 icon="pi pi-plus"
                 label="Add User"
                 @click="addUserModal = true"
             />
         </div>
-        <IconField>
-            <InputIcon class="pi pi-search" />
-            <InputText placeholder="Search" fluid />
-        </IconField>
-        <DataTable
-            :value="users"
-            scrollable
-            scrollHeight="100%"
-            tableStyle="width: 100%"
-            class="flex-grow overflow-hidden h-20"
+        <div
+            class="flex flex-col flex-grow border border-color p-4 bg-(--p-content-background) rounded-md"
         >
-            <Column class="w-5">
-                <template #header>
-                    <div class="flex-1 text-center p-datatable-column-title">
-                        <Checkbox binary />
-                    </div>
-                </template>
-                <template #body>
-                    <div class="text-center">
-                        <Checkbox binary />
-                    </div>
-                </template>
-            </Column>
-            <Column header="Name">
-                <template #body="{ data }">
-                    {{ data.profile?.first_name }}
-                    {{ data.profile?.last_name }}
-                </template>
-            </Column>
-            <Column field="email" header="Email"></Column>
-            <Column field="role" header="Role"></Column>
-            <Column class="w-30">
-                <template #header>
-                    <div class="flex-1 text-center p-datatable-column-title">
-                        Action
-                    </div>
-                </template>
-                <template #body="{ data }">
-                    <div class="text-center">
-                        <Button
-                            icon="pi pi-ellipsis-v"
-                            aria-label="More"
-                            severity="secondary"
-                            variant="text"
-                            aria-haspopup="true"
-                            aria-controls="more"
-                            @click="moreMenu"
-                        />
-                        <TieredMenu
-                            ref="menu"
-                            id="more"
-                            :model="menuItems"
-                            popup
-                            appendTo="#users-section"
-                        />
-                    </div>
-                </template>
-            </Column>
-        </DataTable>
+            <DataTable
+                :value="users"
+                scrollable
+                scrollHeight="100%"
+                tableStyle="width: 100%"
+                class="flex-grow h-0"
+            >
+                <Column class="w-5">
+                    <template #header>
+                        <div
+                            class="flex-1 text-center p-datatable-column-title"
+                        >
+                            <Checkbox binary />
+                        </div>
+                    </template>
+                    <template #body>
+                        <div class="text-center">
+                            <Checkbox binary />
+                        </div>
+                    </template>
+                </Column>
+                <Column header="Name">
+                    <template #body="{ data }">
+                        {{ data.first_name }}
+                        {{ data.last_name }}
+                    </template>
+                </Column>
+                <Column field="email" header="Email"></Column>
+                <Column field="role" header="Role"></Column>
+                <Column class="w-30">
+                    <template #header>
+                        <div
+                            class="flex-1 text-center p-datatable-column-title"
+                        >
+                            Action
+                        </div>
+                    </template>
+                    <template #body="{ data, index }">
+                        <div class="text-center">
+                            <Button
+                                icon="pi pi-ellipsis-v"
+                                aria-label="More"
+                                severity="secondary"
+                                variant="text"
+                                aria-haspopup="true"
+                                aria-controls="more"
+                                @click="(e) => toggleMenu(e, index)"
+                            />
+                            <TieredMenu
+                                v-for="(item, i) in users"
+                                :key="i"
+                                ref="menu"
+                                id="more"
+                                :model="menuItems"
+                                popup
+                                appendTo="#users-section"
+                            />
+                        </div>
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
     </section>
 
     <Dialog
@@ -181,7 +207,7 @@ function clearError(field) {
             ref="addUserForm"
             @submit="onSubmit"
         >
-            <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-6">
                 <div class="flex flex-row gap-1">
                     <FormField
                         name="first_name"

@@ -19,28 +19,27 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'role' => ucfirst($this->role),
-            "profile" => $this->whenLoaded('profile', function () {
-                return [
-                    'first_name' => $this->profile->first_name,
-                    'middle_name' => $this->profile->middle_name,
-                    'last_name' => $this->profile->last_name,
-                    "date_of_birth" => $this->profile->date_of_birth,
-                    "gender" => $this->profile->gender,
-                    "phone" => $this->profile->phone,
-                    "contact_email" => $this->profile->contact_email,
-                ];
-            }),
         ];
 
         if ($this->relationLoaded('profile') && $this->profile) {
+            $data['first_name'] = $this->profile->first_name;
+            $data['middle_name'] = $this->profile->middle_name;
+            $data['last_name'] = $this->profile->last_name;
+            $data['date_of_birth'] = $this->profile->date_of_birth;
+            $data['gender'] = $this->profile->gender;
+            $data['phone'] = $this->profile->phone;
+            $data['contact_email'] = $this->profile->contact_email;
+
+
             if ($this->profile->relationLoaded('doctor') && $this->profile->doctor) {
                 $data['doctor'] = [
-                    'id'            => $this->profile->doctor->id,
-                    'specialty'     => $this->profile->doctor->specialty
-                                        ? $this->profile->doctor->specialty->name
-                                        : null,
-                    'license_number'     => $this->profile->doctor->license_number,
-                    'room_number'          => $this->profile->doctor->room_number,
+                    'id' => $this->profile->doctor->id,
+                    'specialty' => [
+                        'id' => $this->profile->doctor->specialty?->id,
+                        'name' => $this->profile->doctor->specialty?->name,
+                    ],
+                    'license_number' => $this->profile->doctor->license_number,
+                    'room_number' => $this->profile->doctor->room_number,
                     'clinic_phone_number' => $this->profile->doctor->clinic_phone_number,
                     'doctor_note' => $this->profile->doctor->doctor_note,
                 ];
@@ -48,14 +47,14 @@ class UserResource extends JsonResource
 
             if ($this->profile->relationLoaded('staff') && $this->profile->staff) {
                 $data['staff'] = [
-                    'id'         => $this->profile->staff->id,
+                    'id' => $this->profile->staff->id,
                 ];
             }
 
             if ($this->profile->relationLoaded('patient') && $this->profile->patient) {
                 $data['patient'] = [
-                    'id'          => $this->profile->patient->id,
-                    'medical_history'  => $this->profile->patient->medical_history,
+                    'id' => $this->profile->patient->id,
+                    'medical_history' => $this->profile->patient->medical_history,
                 ];
             }
         }

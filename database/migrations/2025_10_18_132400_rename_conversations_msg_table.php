@@ -10,18 +10,13 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('services', function (Blueprint $table) {
-            $table->renameColumn('service_catery_id', 'service_category_id');
-        });
+        Schema::rename('conversations_messages', 'conversation_messages');
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('services', function (Blueprint $table) {
-            $table->renameColumn('service_category_id', 'service_catery_id');
-        });
+        Schema::rename('conversation_messages', 'conversations_messages');
     }
 };

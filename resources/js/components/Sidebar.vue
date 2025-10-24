@@ -55,6 +55,11 @@ const sidebarItems = {
             route: "dashboard",
         },
         {
+            label: "Find a Doctor",
+            icon: "pi pi-user",
+            route: "doctors",
+        },
+        {
             label: "Appointments",
             icon: "pi pi-calendar",
             route: "appointments",
@@ -75,6 +80,28 @@ const sidebarItems = {
             route: "billing",
         },
     ],
+    staff: [
+        {
+            label: "Dashboard",
+            icon: "pi pi-th-large",
+            route: "dashboard",
+        },
+        {
+            label: "Test Requests",
+            icon: "pi pi-calendar",
+            route: "test-requests",
+        },
+        {
+            label: "Patients",
+            icon: "pi pi-address-book",
+            route: "patients",
+        },
+        {
+            label: "Consultation",
+            icon: "pi pi-comment",
+            route: "consultation",
+        },
+    ],
 };
 
 const navItems = computed(() => {
@@ -89,12 +116,17 @@ const isActive = (itemRoute) => {
     const mainSegment = segments[1];
     return mainSegment === itemRoute;
 };
+
+const sidebarWidth = computed(() =>
+    route.meta.collapsedSidebar ? "w-[55px]" : "w-[55px] lg:w-52"
+);
 </script>
 
 <template>
     <aside
         v-if="user"
-        class="flex flex-col w-[55px] lg:w-52 h-screen sticky top-0 p-2 border-r border-color"
+        class="flex flex-col h-screen sticky top-0 p-2 border-r border-color text-nowrap"
+        :class="sidebarWidth"
     >
         <div class="flex flex-col gap-2">
             <ul>
@@ -116,13 +148,12 @@ const isActive = (itemRoute) => {
                                 class="rounded-full w-9 h-9 object-cover border border-color"
                             />
                             <span
-                                v-if="user?.profile"
                                 class="p-button-label truncate"
                                 :class="{
                                     'font-bold!': isActive('profile'),
                                 }"
-                                >{{ user?.profile?.first_name }}
-                                {{ user?.profile?.last_name }}</span
+                                >{{ user?.first_name }}
+                                {{ user?.last_name }}</span
                             >
                         </Button>
                     </RouterLink>

@@ -1,0 +1,21 @@
+import { ref } from "vue";
+
+const defaultRecipient = {
+    id: null,
+    name: "Unknown Recipient",
+};
+
+export const selectedRecipient = ref({ ...defaultRecipient });
+
+export function storeSelectedRecipient(recipient) {
+    const recipient_id = recipient.user_id ?? recipient.id;
+    selectedRecipient.value = {
+        id: recipient_id,
+        name: `${recipient.first_name} ${recipient.last_name}`,
+    };
+}
+
+// Reset to default
+export function resetSelectedRecipient() {
+    selectedRecipient.value = { ...defaultRecipient };
+}

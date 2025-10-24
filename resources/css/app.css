@@ -29,6 +29,7 @@
 
     /* PRIMEVUE */
     --p-button-text-contrast-hover-background: var(--p-slate-100) !important;
+    --p-button-text-secondary-hover-background: var(--p-surface-100) !important;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -46,6 +47,9 @@
         /* PRIMEVUE */
         --p-button-text-contrast-hover-background: var(
             --p-slate-700
+        ) !important;
+        --p-button-text-secondary-hover-background: var(
+            --p-surface-700
         ) !important;
     }
 }
@@ -139,9 +143,9 @@ small,
     background-color: var(--accent-color);
 }
 
-/* -- */
+/* --------- */
 /* Libraries */
-/* -- */
+/* --------- */
 
 /* PrimeVue */
 .p-button {
@@ -161,5 +165,5 @@ small,
 }
 
 .p-dialog-content {
-    padding-top: 10px;
+    padding-top: 10px !important;
 }
