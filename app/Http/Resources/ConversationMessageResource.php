@@ -15,8 +15,10 @@ class ConversationMessageResource extends JsonResource
     public function toArray(Request $request): array
     {
         $user = $request->user();
-        $recipient_id = $this->conversation->participants
-                             ->firstWhere('id', '!=', $user->id)->id;
+        $recipient = $this->conversation->participants
+         ->firstWhere('id', '!=', $user->id);
+
+        $recipient_id = $recipient?->id ?? null;
 
         return [
             'id' => $this->id,

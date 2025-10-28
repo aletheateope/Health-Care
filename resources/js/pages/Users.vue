@@ -3,6 +3,8 @@ import { ref, onMounted } from "vue";
 
 import SelectButton from "primevue/selectbutton";
 import Dialog from "primevue/dialog";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useConfirm } from "primevue/useconfirm";
 import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import DataTable from "primevue/datatable";
@@ -26,9 +28,10 @@ import { userInitialValues } from "@/utils/form-initial-values";
 import { useAppToast } from "@/utils/toast";
 
 const toast = useAppToast();
+const loading = ref(false);
+const confirm = useConfirm();
 
 const userTypes = ref("all");
-
 const tabItems = [
     { label: "All", value: "all" },
     { label: "Doctors", value: "doctors" },
@@ -36,14 +39,40 @@ const tabItems = [
     { label: "Patients", value: "patients" },
 ];
 
-const addUserModal = ref(false);
-
 const roles = [
     { label: "Admin", value: "admin" },
     { label: "Doctor", value: "doctor" },
     { label: "Staff", value: "staff" },
     { label: "Patient", value: "patient" },
 ];
+
+const addUserModal = ref(false);
+
+const errors = ref({});
+
+async function onSubmit({ values }) {
+    errors.value = {};
+    loading.value = true;
+    try {
+        const response = await axios.post("/user", values);
+        toast.success("User added successfully.");
+        addUserModal.value = false;
+
+        users.value.push(response.data.data);
+    } catch (error) {
+        if (error.response && error.response.status === 422) {
+            errors.value = error.response.data.errors;
+        } else {
+            toast.error("Failed to add user.");
+        }
+    } finally {
+        loading.value = false;
+    }
+}
+
+function clearError(field) {
+    errors.value[field] = null;
+}
 
 const users = ref([]);
 
@@ -58,36 +87,48 @@ onMounted(async () => {
 
 const menu = ref([]);
 
-const menuItems = ref([
-    { label: "Edit", icon: "pi pi-pen-to-square" },
-    { label: "Delete", icon: "pi pi-trash" },
-]);
+const menuItems = (user) => [
+    {
+        label: "Edit",
+        icon: "pi pi-pen-to-square",
+        command: () => editUser(user),
+    },
+    {
+        label: "Delete",
+        icon: "pi pi-trash",
+        command: () => deleteUser(user),
+    },
+];
 
 const toggleMenu = (event, i) => {
     menu.value[i].toggle(event);
 };
 
-const errors = ref({});
-
-async function onSubmit({ values }) {
-    errors.value = {};
-    try {
-        const response = await axios.post("/user", values);
-        toast.success("User added successfully.");
-        addUserModal.value = false;
-
-        users.value.push(response.data.data);
-    } catch (error) {
-        if (error.response && error.response.status === 422) {
-            errors.value = error.response.data.errors;
-        } else {
-            toast.error("Failed to add user.");
-        }
-    }
+function editUser(user) {
+    console.log("Edit user:", user);
 }
 
-function clearError(field) {
-    errors.value[field] = null;
+function deleteUser(user) {
+    console.log("Delete user:", user);
+    confirm.require({
+        message: `Are you sure you want to delete ${user.first_name} ${user.last_name}?`,
+        header: "Confirm Deletion",
+        icon: "pi pi-exclamation-triangle",
+        rejectLabel: "Cancel",
+        acceptLabel: "Delete",
+        rejectClass: "p-button-outlined p-button-secondary",
+        acceptClass: "p-button-danger",
+        accept: async () => {
+            try {
+                await axios.delete(`/user/${user.id}`);
+                users.value = users.value.filter((u) => u.id !== user.id);
+                toast.success("User deleted successfully.");
+            } catch (error) {
+                console.log(error);
+                toast.error("Failed to delete user.");
+            }
+        },
+    });
 }
 </script>
 
@@ -104,6 +145,7 @@ function clearError(field) {
 
 <template>
     <Toast />
+    <ConfirmDialog />
     <section class="flex flex-col gap-8 h-full" id="users-section">
         <header class="flex flex-col sm:flex-row gap-6">
             <SelectButton
@@ -167,7 +209,7 @@ function clearError(field) {
                             Action
                         </div>
                     </template>
-                    <template #body="{ data, index }">
+                    <template #body="{ index }">
                         <div class="text-center">
                             <Button
                                 icon="pi pi-ellipsis-v"
@@ -179,11 +221,11 @@ function clearError(field) {
                                 @click="(e) => toggleMenu(e, index)"
                             />
                             <TieredMenu
-                                v-for="(item, i) in users"
+                                v-for="(user, i) in users"
                                 :key="i"
                                 ref="menu"
                                 id="more"
-                                :model="menuItems"
+                                :model="menuItems(user)"
                                 popup
                                 appendTo="#users-section"
                             />
@@ -456,6 +498,7 @@ function clearError(field) {
                 <Button
                     type="button"
                     label="Save"
+                    :loading="loading"
                     @click="$refs.addUserForm.submit()"
                 />
             </div>

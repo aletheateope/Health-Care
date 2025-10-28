@@ -19,9 +19,9 @@ class ConversationResource extends JsonResource
         $otherParticipants = $this->participants
             ->where('id', '!=', $user_id)
             ->map(fn ($user) => [
-                'id' => $user->id,
-                'first_name' => $user->profile->first_name,
-                'last_name' => $user->profile->last_name,
+                'id'         => $user?->id,
+                'first_name' => $user?->profile?->first_name ?? 'Unknown',
+                'last_name'  => $user?->profile?->last_name ?? 'User',
             ])
             ->values();
 
@@ -29,10 +29,14 @@ class ConversationResource extends JsonResource
         return [
             'id' => $this->id,
             'ref_id' => $this->ref_id,
-            'participant' => $otherParticipants->first(),
+            'participant'  => $otherParticipants->first() ?? [
+                    'id'         => null,
+                    'first_name' => 'Unknown',
+                    'last_name'  => 'User',
+                ],
             'last_message' =>  [
                 'message' => $this->latestMessage->message,
-                'sender_id' => $this->latestMessage->sender_id,
+                'sender_id' => $this->latestMessage?->sender_id,
                 'created_at'=> $this->latestMessage->created_at
             ]
         ];

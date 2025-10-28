@@ -8,8 +8,10 @@ import PrimeVue from "primevue/config";
 import Aura from "@primeuix/themes/aura";
 import { definePreset } from "@primeuix/themes";
 
-import Toast from "primevue/toast";
 import ToastService from "primevue/toastservice";
+import ConfirmationService from "primevue/confirmationservice";
+
+import Toast from "primevue/toast";
 import Button from "primevue/button";
 
 import { useAuthStore } from "@/stores/auth";
@@ -40,6 +42,7 @@ async function bootstrap() {
 
     app.use(PrimeVue, { theme: { preset: MyPreset } });
     app.use(ToastService);
+    app.use(ConfirmationService);
 
     app.component("Button", Button);
     app.component("Toast", Toast);

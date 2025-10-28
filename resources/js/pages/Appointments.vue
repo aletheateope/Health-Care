@@ -14,6 +14,8 @@ import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import AutoComplete from "primevue/autocomplete";
 
+import DataTableContainer from "@/components/DataTableContainer.vue";
+
 import { formatDate } from "@/utils/date";
 import { useAppToast } from "@/utils/toast";
 
@@ -245,7 +247,7 @@ async function onSubmit() {
                 @click="addAppointmentModal = true"
             />
         </div>
-        <div class="flex flex-col flex-grow">
+        <DataTableContainer>
             <DataTable
                 :value="appointments"
                 :loading="loading"
@@ -310,7 +312,7 @@ async function onSubmit() {
                     </template>
                 </Column>
             </DataTable>
-        </div>
+        </DataTableContainer>
     </section>
     <Dialog
         v-model:visible="addAppointmentModal"

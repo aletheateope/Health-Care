@@ -100,15 +100,15 @@ class ConversationController extends Controller
             ->first();
 
         $messages = ConversationMessageResource::collection($conversation->messages)
-            ->additional(['recipient_id' => $recipient->id]);
+            ->additional(['recipient_id' => $recipient?->id]);
 
         return response()->json([
             'conversation_id' => $conversation->id,
             'recipient' => [
-                'id' => $recipient->id,
-                'role' => $recipient->role,
-                'first_name' => $recipient->profile->first_name,
-                'last_name' => $recipient->profile->last_name
+                'id' => $recipient?->id ?? null,
+                'role' => $recipient?->role ?? 'unkown',
+                'first_name' => $recipient?->profile?->first_name ?? 'Unknown',
+                'last_name' => $recipient?->profile?->last_name ?? 'User',
             ],
             'messages' => $messages,
         ]);
@@ -155,7 +155,7 @@ class ConversationController extends Controller
         return response()->json([
             "new" => $conversation_id === "new",
             "ref_id" => $conversation->ref_id,
-             "message" => new ConversationMessageResource($newMessage),
+            "message" => new ConversationMessageResource($newMessage),
        ]);
 
     }

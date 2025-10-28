@@ -6,14 +6,20 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class Header extends Component
+class Service extends Component
 {
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public $title;
+    public $description;
+    public $icon;
+
+    public function __construct($title=null, $description=null, $icon=null)
     {
-        //
+        $this->title = $title;
+        $this->description = $description;
+        $this->icon = $icon;
     }
 
     /**
@@ -21,6 +27,6 @@ class Header extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.header');
+        return view('components.card.service');
     }
 }

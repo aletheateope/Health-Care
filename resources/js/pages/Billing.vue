@@ -6,6 +6,8 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
 
+import DataTableContainer from "@/components/DataTableContainer.vue";
+
 const billingType = ref("1");
 
 const tabItems = [
@@ -70,7 +72,7 @@ const toggleMenu = (event, i) => {
                 fluid
             />
         </header>
-        <div class="flex flex-col flex-grow">
+        <DataTableContainer>
             <DataTable
                 :value="billings"
                 scrollable
@@ -116,6 +118,6 @@ const toggleMenu = (event, i) => {
                     </template>
                 </Column>
             </DataTable>
-        </div>
+        </DataTableContainer>
     </section>
 </template>

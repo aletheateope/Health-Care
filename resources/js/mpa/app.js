@@ -3,10 +3,12 @@ import PrimeVue from "primevue/config";
 import Aura from "@primeuix/themes/aura";
 import { definePreset } from "@primeuix/themes";
 
-import Button from "@/components/mpa/Button.vue";
-import RegisterForm from "@/components/mpa/RegisterForm.vue";
-import LoginForm from "@/components/mpa/LoginForm.vue";
 import Sidebar from "@/components/mpa/Sidebar.vue";
+import Button from "@/components/mpa/Button.vue";
+import RegisterForm from "@/components/mpa/FormRegister.vue";
+import LoginForm from "@/components/mpa/FormLogin.vue";
+import SearchDoctorForm from "@/components/mpa/FormSearchDoctor.vue";
+import MessageForm from "@/components/mpa/FormMessage.vue";
 
 const MyPreset = definePreset(Aura, {
     semantic: {
@@ -27,10 +29,12 @@ const MyPreset = definePreset(Aura, {
 });
 
 const components = {
+    Sidebar,
     Button,
     RegisterForm,
     LoginForm,
-    Sidebar,
+    SearchDoctorForm,
+    MessageForm,
 };
 
 document.querySelectorAll("[data-vue]").forEach((el) => {
