@@ -26,6 +26,10 @@ import CheckboxGroup from "primevue/checkboxgroup";
 
 import { userInitialValues } from "@/utils/form-initial-values";
 import { useAppToast } from "@/utils/toast";
+import { useTimezoneStore } from "@/stores/timezone";
+
+const timezoneStore = useTimezoneStore();
+const timezone = timezoneStore.timezone;
 
 const toast = useAppToast();
 const loading = ref(false);
@@ -53,8 +57,14 @@ const errors = ref({});
 async function onSubmit({ values }) {
     errors.value = {};
     loading.value = true;
+
     try {
-        const response = await axios.post("/user", values);
+        const payload = {
+            ...values,
+            timezone,
+        };
+
+        const response = await axios.post("/user", payload);
         toast.success("User added successfully.");
         addUserModal.value = false;
 
@@ -109,7 +119,6 @@ function editUser(user) {
 }
 
 function deleteUser(user) {
-    console.log("Delete user:", user);
     confirm.require({
         message: `Are you sure you want to delete ${user.first_name} ${user.last_name}?`,
         header: "Confirm Deletion",
