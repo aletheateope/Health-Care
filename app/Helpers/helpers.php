@@ -13,3 +13,10 @@ if (!function_exists('serviceToSpecialty')) {
         return $map[$serviceId] ?? null;
     }
 }
+
+if (!function_exists('nonDoctorServices')) {
+    function nonDoctorServices(): array
+    {
+        return [2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    }
+}

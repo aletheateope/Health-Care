@@ -9,9 +9,10 @@ use App\Http\Resources\DoctorResource;
 
 class DoctorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $doctors = Doctor::with(['profile', 'specialty'])->get();
+        $limit = $request->input('limit', 10);
+        $doctors = Doctor::with(['profile', 'specialty'])->paginate($limit);
         return DoctorResource::collection($doctors);
     }
 

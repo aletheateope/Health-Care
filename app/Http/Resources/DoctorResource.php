@@ -21,7 +21,6 @@ class DoctorResource extends JsonResource
             'middle_name' => $this->profile->middle_name,
             'last_name' => $this->profile->last_name,
             'specialty' => new DoctorSpecialtyResource($this->specialty),
-            'license_number' => $this->license_number,
             'room_number' => $this->room_number,
         ];
     }

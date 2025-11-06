@@ -53,9 +53,35 @@ class AppointmentController extends Controller
         $dayOfWeek = strtolower(Carbon::parse($date)->setTimezone('Asia/Manila')->format('l'));
 
         // Services that do not require doctors
-        $nonDoctorServices = [2,3,4,5,6,7,8,9,10,11];
-        if (in_array($service_id, $nonDoctorServices)) {
-            return response()->json([]);
+        if (in_array($service_id, nonDoctorServices())) {
+            $slots = collect();
+            $start = Carbon::parse("{$date} 08:00:00");
+            $end = Carbon::parse("{$date} 17:00:00");
+
+            while ($start->lessThan($end)) {
+                $slots->push([
+                    'service_id' => $service_id,
+                    'start_date' => $start->format('Y-m-d H:i:s'),
+                    'display' => $start->format('g:i a'),
+                ]);
+                $start->addMinutes(30);
+            }
+            $bookedAppointments = Appointment::where('service_id', $service_id)
+                   ->whereDate('start_date', $date)
+                   ->get(['service_id', 'start_date']);
+
+            // Filter out booked slots
+            $availableSlots = $slots->filter(function ($slot) use ($bookedAppointments) {
+                return !$bookedAppointments->contains(function ($appointment) use ($slot) {
+                    return $appointment->service_id == $slot['service_id']
+                        && Carbon::parse($appointment->start_date, 'Asia/Manila')->equalTo($slot['start_date']);
+                });
+            })
+            ->sortBy('start_date')
+            ->pluck('display')
+            ->values();
+
+            return response()->json($availableSlots);
         }
 
         $specialty_id = serviceToSpecialty($service_id);
@@ -140,6 +166,36 @@ class AppointmentController extends Controller
         $insurance_number = $validated['insurance_number'];
 
 
+        if (in_array($service_id, nonDoctorServices())) {
+            $isBooked = Appointment::where('service_id', $service_id)
+                ->whereDate('start_date', $date)
+                ->whereTime('start_date', $start_time)
+                ->exists();
+
+            if ($isBooked) {
+                return response()->json(['error' => 'This slot is already booked'], 422);
+            }
+
+            // Default slot duration (e.g. 30 minutes)
+            $end_date = Carbon::parse("{$date} {$start_time}")
+                ->addMinutes(30)
+                ->format('Y-m-d H:i:s');
+
+            $appointment = Appointment::create([
+                'patient_id' => $user->profile->patient->id,
+                'doctor_id' => null,
+                'service_id' => $service_id,
+                'start_date' => $start_date,
+                'end_date' => $end_date,
+                'status' => 'upcoming',
+                'appointment_type' => $appointment_type,
+                'date_booked' => now(),
+            ]);
+
+            return response()->json($appointment);
+        }
+
+
         $specialty_id = serviceToSpecialty($service_id);
 
         if (!$specialty_id) {
@@ -196,6 +252,5 @@ class AppointmentController extends Controller
         ]);
 
         return response()->json($appointment);
-
     }
 }

@@ -14,6 +14,8 @@ import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import AutoComplete from "primevue/autocomplete";
 
+import DataTableContainer from "@/components/DataTableContainer.vue";
+
 import { formatDate } from "@/utils/date";
 import { useAppToast } from "@/utils/toast";
 
@@ -35,6 +37,7 @@ async function fetchMyAppointments() {
     try {
         const response = await axios.get("/appointments");
         appointments.value = response.data.data;
+        console.log(response.data.data);
     } catch (err) {
         console.log(err);
     } finally {
@@ -66,13 +69,13 @@ const date = ref(null);
 const timeSlots = ref([]);
 const selectedTimeSlot = ref(null);
 
-async function fetchDoctorAvailableTimeSlots() {
+async function fetchAvailableTimeSlots() {
     if (!date.value || !selectedAppointmentType.value) return;
 
     const serviceId = selectedAppointmentType.value?.value;
 
     try {
-        const response = await axios.get("/api/available-time-slots", {
+        const response = await axios.get("/available-time-slots", {
             params: {
                 date: date.value.toISOString(),
                 service_id: serviceId,
@@ -86,10 +89,7 @@ async function fetchDoctorAvailableTimeSlots() {
     }
 }
 
-watch(
-    [date, selectedAppointmentType, selectedHmo],
-    fetchDoctorAvailableTimeSlots
-);
+watch([date, selectedAppointmentType, selectedHmo], fetchAvailableTimeSlots);
 
 const yesNoOptions = [
     { label: "No", value: false },
@@ -193,7 +193,7 @@ async function onSubmit() {
         const res = await axios.post("/appointment", payload);
         toast.success("Appointment created successfully.");
         addAppointmentModal.value = false;
-        fetchDoctorAvailableTimeSlots();
+        fetchAvailableTimeSlots();
         fetchMyAppointments();
     } catch (err) {
         console.log(err);
@@ -245,7 +245,7 @@ async function onSubmit() {
                 @click="addAppointmentModal = true"
             />
         </div>
-        <div class="flex flex-col flex-grow">
+        <DataTableContainer>
             <DataTable
                 :value="appointments"
                 :loading="loading"
@@ -261,9 +261,12 @@ async function onSubmit() {
                 </Column>
                 <Column field="doctor" header="Doctor">
                     <template #body="{ data }">
-                        Dr.
-                        {{ data.doctor.first_name }}
-                        {{ data.doctor.last_name }}
+                        <template v-if="data.doctor && data.doctor.id">
+                            Dr.
+                            {{ data.doctor.first_name }}
+                            {{ data.doctor.last_name }}
+                        </template>
+                        <template v-else>N/A</template>
                     </template>
                 </Column>
                 <Column field="appointmentType" header="Appointment Type">
@@ -275,7 +278,7 @@ async function onSubmit() {
                     <template #body="{ data }">
                         <p v-if="data.appointment_type === 'online'">Online</p>
                         <p v-else-if="data.appointment_type === 'walk-in'">
-                            {{ data.doctor.room_number }}
+                            {{ data.doctor?.room_number || "Laboratory" }}
                         </p>
                         <p v-else>---</p>
                     </template>
@@ -310,7 +313,7 @@ async function onSubmit() {
                     </template>
                 </Column>
             </DataTable>
-        </div>
+        </DataTableContainer>
     </section>
     <Dialog
         v-model:visible="addAppointmentModal"

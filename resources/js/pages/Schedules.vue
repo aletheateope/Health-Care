@@ -6,6 +6,8 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
 
+import DataTableContainer from "@/components/DataTableContainer.vue";
+
 const appointmentType = ref("upcoming");
 
 const tabItems = [
@@ -66,9 +68,7 @@ const toggleMenu = (event, i) => {
             />
             <Button label="Add Consultation Appointment" icon="pi pi-plus" />
         </header>
-        <div
-            class="flex flex-col flex-grow border border-color p-4 bg-(--p-content-background) rounded-md"
-        >
+        <DataTableContainer>
             <DataTable
                 :value="schedules"
                 scrollable
@@ -115,6 +115,6 @@ const toggleMenu = (event, i) => {
                     </template>
                 </Column>
             </DataTable>
-        </div>
+        </DataTableContainer>
     </section>
 </template>

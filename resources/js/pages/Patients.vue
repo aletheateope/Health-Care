@@ -8,6 +8,8 @@ import InputText from "primevue/inputtext";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 
+import DataTableContainer from "@/components/DataTableContainer.vue";
+
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
@@ -36,9 +38,7 @@ const patients = ref([
                 icon="pi pi-plus"
             />
         </header>
-        <div
-            class="flex flex-col flex-grow border border-color p-4 bg-(--p-content-background) rounded-md"
-        >
+        <DataTableContainer>
             <DataTable
                 :value="patients"
                 scrollable
@@ -51,6 +51,6 @@ const patients = ref([
                 <Column field="lastConsult" header="Last Consultation"></Column>
                 <Column field="doctor" header="Doctor"></Column>
             </DataTable>
-        </div>
+        </DataTableContainer>
     </section>
 </template>

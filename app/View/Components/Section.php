@@ -13,9 +13,13 @@ class Section extends Component
      */
 
     public $title;
-    public function __construct($title = null)
+    public $description;
+    public $class;
+    public function __construct($title = null, $description = null, $class = null)
     {
         $this->title = $title;
+        $this->description = $description;
+        $this->class = $class;
     }
 
     /**

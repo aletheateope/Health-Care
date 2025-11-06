@@ -61,4 +61,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            $user->profile()->delete();
+        });
+    }
 }

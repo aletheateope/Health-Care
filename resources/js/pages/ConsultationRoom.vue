@@ -46,6 +46,7 @@ async function fetchMyConversation() {
             params: { conversation_id: conversation_id.value },
         });
         conversation.value = res.data;
+        console.log(res.data);
     } catch (err) {
         const status = err.response?.status;
 

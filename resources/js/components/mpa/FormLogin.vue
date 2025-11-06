@@ -13,6 +13,9 @@ import Password from "primevue/password";
 import Checkbox from "primevue/checkbox";
 import Button from "primevue/button";
 
+const loading = ref(false);
+const success = ref(false);
+
 const initialValues = {
     email: "",
     password: "",
@@ -23,14 +26,21 @@ const errors = ref({});
 
 async function onSubmit({ values }) {
     errors.value = {};
+    loading.value = true;
+    success.value = false;
+
     try {
         await axios.post("/login", values);
+
+        success.value = true;
 
         window.location.href = "/portal/dashboard";
     } catch (error) {
         if (error.response && error.response.status === 422) {
             errors.value = error.response.data.errors;
         }
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -108,7 +118,13 @@ function clearError(field) {
                     />
                 </div>
             </div>
-            <Button type="submit" label="Login" fluid />
+            <Button
+                type="submit"
+                label="Login"
+                :loading="loading"
+                :icon="success ? 'pi pi-check' : ''"
+                fluid
+            />
             <p>
                 Dont have an account?
                 <span>

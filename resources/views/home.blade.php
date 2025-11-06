@@ -85,11 +85,11 @@
                     journey to better health.</p>
             </div>
             <div data-vue="Button" data-label="See Available Doctors" data-icon="pi pi-arrow-right"
-                data-icon-pos="right" />
+                data-icon-pos="right"></div>
         </div>
     </x-section>
     <x-section>
-        <div class="flex flex-col md:flex-row">
+        <div class="flex flex-col lg:flex-row gap-10">
             <div class="flex flex-col flex-1 gap-8">
                 <div class="flex flex-col gap-3">
                     <h3 class="font-bold">Why Choose Us</h3>
@@ -98,12 +98,41 @@
                         pellentesque. Viverra convallis diam eget iaculis. Sed ornare tellus semper tortor pretium nunc
                         duis curabitur.</p>
                 </div>
-                <div class="w-full h-200 rounded-md overflow-hidden">
+                <div class="w-full h-full rounded-md overflow-hidden">
                     <img src="https://kanto.ph/wp-content/uploads/2023/10/JRSP-ARUP-HERO-01.png" alt=""
+                        class="w-full h-full object-cover ">
+                </div>
+            </div>
+            <div class="flex flex-col flex-1 gap-8">
+                <x-card.feature title="State of the Art Facilities"
+                    description="Lorem ipsum dolor sit amet consectetur. Egestas eget tincidunt habitasse et. Proin tincidunt pellentesque etiam velit et auctor mi aliquam suscipit.">
+                </x-card.feature>
+                <x-card.feature title="Expert Specialists"
+                    description="Lorem ipsum dolor sit amet consectetur. Egestas eget tincidunt habitasse et. Proin tincidunt pellentesque etiam velit et auctor mi aliquam suscipit.">
+                </x-card.feature>
+                <x-card.feature title="Compassion Patient Care"
+                    description="Lorem ipsum dolor sit amet consectetur. Egestas eget tincidunt habitasse et. Proin tincidunt pellentesque etiam velit et auctor mi aliquam suscipit.">
+                </x-card.feature>
+            </div>
+        </div>
+    </x-section>
+    <x-section>
+        <div class="flex flex-col lg:flex-row gap-10">
+            <div class="flex-1 flex flex-col gap-6">
+                <h3 class="font-bold">Your Journey to Better Health Starts Here</h3>
+                <p>Lorem ipsum dolor sit amet consectetur. Ultrices id potenti neque aliquet. Pulvinar id bibendum a
+                    mauris aenean sed.
+                    Sapien pretium nunc ultrices hac dictum adipiscing id neque. Orci etiam turpis adipiscing nullam id
+                    egestas morbi
+                    egestas.</p>
+                <div data-vue="Button" data-label="Reach Out to Us"></div>
+            </div>
+            <div class="flex-1">
+                <div class="w-full h-full rounded-md overflow-hidden">
+                    <img src="https://i.ibb.co/FqBMrXK4/shutterstock-2480850611.png" alt=""
                         class="w-full h-full object-cover">
                 </div>
             </div>
-            <div class="flex flex-col flex-1"></div>
         </div>
     </x-section>
 </x-layout>

@@ -51,14 +51,16 @@ Route::middleware(['auth'])->prefix('portal')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
     Route::get('/user', [UserController::class, 'currentUser']);
     Route::post('/user', [UserController::class, 'store']);
-    Route::get('/users', [UserController::class, 'index']);
+    Route::delete('/user/{user}', [UserController::class, 'destroy']);
     Route::post('/doctor/schedule', [ScheduleController::class, 'store']);
     Route::get('/doctor/schedule', [ScheduleController::class, 'mySchedule']);
     Route::put('/doctor/profile', [DoctorController::class, 'update']);
     Route::post('/appointment', [AppointmentController::class, 'store']);
     Route::get('/appointments', [AppointmentController::class, 'myAppointments']);
+    Route::get('/available-time-slots', [AppointmentController::class, 'getAvailableTimes']);
     Route::get('/conversation', [ConversationController::class, 'findConversation']);
     Route::post('/conversation', [ConversationController::class, 'store']);
     Route::get('/my-conversation', [ConversationController::class, 'myConversation']);
@@ -71,9 +73,3 @@ Route::get('/force-logout', function () {
     request()->session()->regenerateToken();
     return redirect('/login');
 });
-
-
-
-// Route::get('/portal/dashboard', function () {
-//     return view('app');
-// })->name('portal');

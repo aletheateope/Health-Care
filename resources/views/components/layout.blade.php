@@ -23,7 +23,8 @@
                 <h6>Our healthcare management system helps clinics and hospitals streamline appointments, patient
                     records,
                     and billing in
-                    one secure platform. By simplifying operations, we give providers more time to focus on what truly
+                    one secure platform. By simplifying operations, we give providers more time to focus on what
+                    truly
                     matters—delivering
                     quality care.
                 </h6>
@@ -38,7 +39,7 @@
                 </div>
                 <div data-vue="Button" data-label="Book an Appointment" data-icon="pi pi-calendar"></div>
             </div>
-            <div class="hidden flex-col md:w-[30%] md:flex lg:w-[15%] xl:w-[40%] 2xl:flex-1">
+            <div class="hidden flex-col md:flex md:w-[30%] lg:w-[15%] xl:w-[40%] 2xl:flex-1">
             </div>
         </section>
     </div>
@@ -48,7 +49,7 @@
     <main class="flex flex-col gap-40 p-2 sm:px-12 sm:py-8 lg:px-24 lg:py-12 2xl:px-48">
         {{ $slot }}
     </main>
-    <footer id="vue-footer"></footer>
+    <x-footer />
 </body>
 
 </html>

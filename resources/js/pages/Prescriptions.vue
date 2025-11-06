@@ -8,6 +8,8 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
 
+import DataTableContainer from "@/components/DataTableContainer.vue";
+
 const prescriptions = ref([
     {
         patientName: "test",
@@ -46,9 +48,7 @@ const toggleMenu = (event, i) => {
             </IconField>
             <Button label="Write Prescription" icon="pi pi-plus" />
         </header>
-        <div
-            class="flex flex-col flex-grow border border-color p-4 bg-(--p-content-background) rounded-md"
-        >
+        <DataTableContainer>
             <DataTable
                 :value="prescriptions"
                 scrollable
@@ -92,6 +92,6 @@ const toggleMenu = (event, i) => {
                     </template>
                 </Column>
             </DataTable>
-        </div>
+        </DataTableContainer>
     </section>
 </template>
