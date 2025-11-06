@@ -16,7 +16,13 @@ const mainClass = computed(() => route.meta.mainClass || "");
         <div :class="['flex flex-col flex-grow', parentClass]">
             <Header />
             <main :class="['p-4', mainClass]">
-                <RouterView />
+                <RouterView v-slot="{ Component, route }">
+                    <transition name="fade" mode="out-in" :key="route.fullPath">
+                        <div class="h-full">
+                            <component :is="Component" />
+                        </div>
+                    </transition>
+                </RouterView>
             </main>
         </div>
     </div>

@@ -75,7 +75,7 @@ async function fetchAvailableTimeSlots() {
     const serviceId = selectedAppointmentType.value?.value;
 
     try {
-        const response = await axios.get("/api/available-time-slots", {
+        const response = await axios.get("/available-time-slots", {
             params: {
                 date: date.value.toISOString(),
                 service_id: serviceId,

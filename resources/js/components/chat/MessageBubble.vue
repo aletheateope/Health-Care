@@ -4,6 +4,7 @@ const props = defineProps({
     messages: Array,
 });
 </script>
+
 <template>
     <div v-if="sender === 'me'" class="flex flex-col py-2 gap-1">
         <div v-for="(msg, i) in messages" :key="msg.id" class="flex flex-row">

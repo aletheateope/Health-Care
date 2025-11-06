@@ -32,8 +32,8 @@ import RadioButtonGroup from "primevue/radiobuttongroup";
                     <label for="hmo">HMO</label>
                 </FloatLabel>
             </FormField>
-            <div class="flex flex-col lg:flex-row justify-between">
-                <div class="flex flex-col gap-3 flex-grow">
+            <div class="flex flex-col lg:flex-row justify-between gap-8">
+                <div class="flex flex-col gap-3">
                     <h6 class="text-base">Schedule</h6>
                     <CheckboxGroup class="flex flex-wrap gap-10">
                         <div class="flex items-center gap-2">
@@ -66,7 +66,7 @@ import RadioButtonGroup from "primevue/radiobuttongroup";
                         </div>
                     </CheckboxGroup>
                 </div>
-                <div class="flex flex-col gap-3">
+                <div class="flex flex-col gap-3 shrink-0 mr-4">
                     <h6 class="text-base">Time</h6>
                     <RadioButtonGroup class="flex flex-wrap gap-4">
                         <div class="flex items-center gap-2">

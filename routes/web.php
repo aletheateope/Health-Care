@@ -60,6 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/doctor/profile', [DoctorController::class, 'update']);
     Route::post('/appointment', [AppointmentController::class, 'store']);
     Route::get('/appointments', [AppointmentController::class, 'myAppointments']);
+    Route::get('/available-time-slots', [AppointmentController::class, 'getAvailableTimes']);
     Route::get('/conversation', [ConversationController::class, 'findConversation']);
     Route::post('/conversation', [ConversationController::class, 'store']);
     Route::get('/my-conversation', [ConversationController::class, 'myConversation']);

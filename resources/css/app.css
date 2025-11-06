@@ -108,7 +108,7 @@ h6,
 
 small,
 .small {
-    font-size: var(--small-text-size);
+    font-size: var(--small-text-size) !important;
 }
 
 /* -- */

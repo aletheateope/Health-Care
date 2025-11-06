@@ -105,7 +105,7 @@ const toggleMenu = (event, i) => {
                                 id="more"
                                 :model="menuItems"
                                 popup
-                                appendTo="#medical-records-section"
+                                appendTo="body"
                             />
                         </div>
                     </template>
