@@ -5,6 +5,7 @@ export const useDoctorStore = defineStore("doctor", () => {
     // State
     const doctors = ref([]);
     const availabilities = ref({});
+    const doctorSpecialties = ref([]);
 
     const loading = ref(false);
     const page = ref(1);
@@ -110,7 +111,6 @@ export const useDoctorStore = defineStore("doctor", () => {
                 }
             }
         }
-
         return Array.from(map.values());
     }
 
@@ -130,15 +130,30 @@ export const useDoctorStore = defineStore("doctor", () => {
         return normalizeTime(a) - normalizeTime(b);
     }
 
+    async function fetchDoctorSpecialties() {
+        try {
+            const response = await axios.get("/api/doctor/specialties");
+
+            doctorSpecialties.value = response.data.data.map((item) => ({
+                label: item.name,
+                value: item.id,
+            }));
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     return {
         // state
         doctors,
         availabilities,
+        doctorSpecialties,
         loading,
         page,
         lastPage,
         // actions
         fetchDoctors,
         fetchAvailability,
+        fetchDoctorSpecialties,
     };
 });

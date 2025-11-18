@@ -111,6 +111,10 @@ small,
     font-size: var(--small-text-size) !important;
 }
 
+thead {
+    top: 0;
+}
+
 /* -- */
 /* CUSTOM CLASSES */
 /* -- */

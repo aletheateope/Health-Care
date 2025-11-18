@@ -16,7 +16,7 @@ use App\Http\Resources\AppointmentResource;
 
 class AppointmentController extends Controller
 {
-    public function myAppointments()
+    public function myAppointments(Request $request)
     {
         $patient = Auth::user()->profile->patient;
 
@@ -26,14 +26,25 @@ class AppointmentController extends Controller
 
         $now = Carbon::now();
 
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+
 
         $appointments = $patient->appointments()
         ->with('service', 'doctor.profile', 'patientHmo')
         ->where('start_date', '>=', $now)
         ->orderBy('start_date', 'asc')
-        ->get();
+        ->paginate($perPage, ['*'], 'page', $page);
 
-        return AppointmentResource::collection($appointments);
+        return response()->json([
+        'data' => AppointmentResource::collection($appointments),
+            'meta' => [
+                'total' => $appointments->total(),
+                'current_page' => $appointments->currentPage(),
+                'per_page' => $appointments->perPage(),
+                'last_page' => $appointments->lastPage(),
+            ]
+        ]);
     }
 
     public function getAvailableTimes(Request $request)
@@ -189,7 +200,6 @@ class AppointmentController extends Controller
                 'end_date' => $end_date,
                 'status' => 'upcoming',
                 'appointment_type' => $appointment_type,
-                'date_booked' => now(),
             ]);
 
             return response()->json($appointment);
@@ -248,7 +258,6 @@ class AppointmentController extends Controller
             'end_date' => $end_date,
             'status'=> 'upcoming',
             'appointment_type' => $appointment_type,
-            'date_booked' => now(),
         ]);
 
         return response()->json($appointment);

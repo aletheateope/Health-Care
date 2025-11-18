@@ -2,10 +2,6 @@
 import { computed, ref, watch, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
-import { useAuthStore } from "@/stores/auth";
-
-import Section from "@/components/Section.vue";
-
 import Dialog from "primevue/dialog";
 import { Form, FormField } from "@primevue/forms";
 import FloatLabel from "primevue/floatlabel";
@@ -16,13 +12,22 @@ import Select from "primevue/select";
 import SelectButton from "primevue/selectbutton";
 import AutoComplete from "primevue/autocomplete";
 
+import { useAuthStore } from "@/stores/auth";
+import { useDoctorStore } from "@/stores/doctor";
 import { useAppToast } from "@/utils/toast";
 
+import Section from "@/components/Section.vue";
+
 const toast = useAppToast();
+const loading = ref(false);
+const error = ref(null);
+
+const doctorStore = useDoctorStore();
+const { doctorSpecialties } = storeToRefs(doctorStore);
+const { fetchDoctorSpecialties } = doctorStore;
 
 const auth = useAuthStore();
 const { user, role } = storeToRefs(auth);
-// const { role } = storeToRefs(auth);
 
 const isEditingPersonal = ref(false);
 
@@ -37,23 +42,6 @@ const formDoctorPersonal = ref({
     clinic_phone_number: "",
     doctor_note: "",
 });
-
-const doctorSpecialtyOptions = ref([]);
-
-async function fetchDoctorSpecialties() {
-    try {
-        const response = await axios.get("/api/doctor/specialties");
-
-        doctorSpecialtyOptions.value = response.data.data.map((item) => ({
-            label: item.name,
-            value: item.id,
-        }));
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-onMounted(fetchDoctorSpecialties);
 
 async function editPersonal() {
     const profile = user?.value;
@@ -92,10 +80,10 @@ async function onUpdateDoctorPersonal() {
 }
 
 const mySchedule = ref([]);
-const loading = ref(false);
-const error = ref(null);
 
 async function fetchSchedule() {
+    if (auth.role !== "doctor") return;
+
     loading.value = true;
     error.value = null;
 
@@ -119,6 +107,9 @@ async function fetchSchedule() {
 }
 
 onMounted(() => {
+    if (auth.role === "doctor") {
+        fetchDoctorSpecialties();
+    }
     fetchSchedule();
 });
 
@@ -174,7 +165,6 @@ function transformSchedule(raw) {
             timeSlots: [...current.slots, ""], // extra empty slot for adding new time
         });
     }
-
     return grouped;
 }
 
@@ -522,9 +512,7 @@ async function onSubmitSchedule() {
                                                 v-model="
                                                     formDoctorPersonal.doctor_specialty_id
                                                 "
-                                                :options="
-                                                    doctorSpecialtyOptions
-                                                "
+                                                :options="doctorSpecialties"
                                                 optionLabel="label"
                                                 optionValue="value"
                                                 fluid

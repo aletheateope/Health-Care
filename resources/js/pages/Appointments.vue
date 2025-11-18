@@ -6,6 +6,7 @@ import Dialog from "primevue/dialog";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
+import Skeleton from "primevue/skeleton";
 
 import { Form, FormField } from "@primevue/forms";
 import FloatLabel from "primevue/floatlabel";
@@ -30,14 +31,19 @@ const tabItems = [
     { label: "History", value: "history" },
 ];
 
-const appointments = ref([]);
+const appointments = ref({ data: [], total: 0 });
+const rows = ref(20);
+const currentPage = ref(0);
 
-async function fetchMyAppointments() {
+async function fetchMyAppointments(page = 0, perPage = 10) {
     loading.value = true;
     try {
-        const response = await axios.get("/appointments");
-        appointments.value = response.data.data;
-        console.log(response.data.data);
+        const response = await axios.get("/appointments", {
+            params: { page: page + 1, per_page: perPage },
+        });
+        appointments.value.data = response.data.data;
+        appointments.value.total = response.data.meta.total;
+        console.log(response.data);
     } catch (err) {
         console.log(err);
     } finally {
@@ -45,7 +51,15 @@ async function fetchMyAppointments() {
     }
 }
 
-onMounted(fetchMyAppointments);
+function onPage(event) {
+    currentPage.value = event.page;
+    rows.value = event.rows;
+    fetchMyAppointments(event.page, event.rows);
+}
+
+onMounted(() => {
+    fetchMyAppointments(currentPage.value, rows.value);
+});
 
 const menu = ref();
 
@@ -54,8 +68,8 @@ const menuItems = ref([
     { label: "Delete", icon: "pi pi-trash" },
 ]);
 
-const moreMenu = (event) => {
-    menu.value.toggle(event);
+const toggleMenu = (event, i) => {
+    menu.value[i].toggle(event);
 };
 
 const addAppointmentModal = ref(false);
@@ -247,13 +261,24 @@ async function onSubmit() {
         </div>
         <DataTableContainer>
             <DataTable
-                :value="appointments"
-                :loading="loading"
-                scrollable
+                :value="appointments.data"
+                :totalRecords="appointments.total"
+                paginator
+                :rows="rows"
+                :lazy="true"
+                @page="onPage"
                 tableStyle="width: 100%"
                 scrollHeight="100%"
-                class="flex-grow h-0"
+                class="flex! flex-col flex-grow h-0"
+                :pt="{
+                    tableContainer: {
+                        class: 'flex-grow',
+                    },
+                }"
             >
+                <template #empty>
+                    <div class="text-center">No appointments found.</div>
+                </template>
                 <Column field="dateTime" header="Date and Time">
                     <template #body="{ data }">
                         {{ data.start_date }}
@@ -291,7 +316,7 @@ async function onSubmit() {
                             Action
                         </div>
                     </template>
-                    <template #body="{ data }">
+                    <template #body="{ data, index }">
                         <div class="text-center">
                             <Button
                                 icon="pi pi-ellipsis-v"
@@ -300,9 +325,11 @@ async function onSubmit() {
                                 variant="text"
                                 aria-haspopup="true"
                                 aria-controls="more"
-                                @click="moreMenu"
+                                @click="(e) => toggleMenu(e, index)"
                             />
                             <TieredMenu
+                                v-for="(appointment, i) in appointments.data"
+                                :key="i"
                                 ref="menu"
                                 id="more"
                                 :model="menuItems"
