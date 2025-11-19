@@ -8,6 +8,7 @@ class Insurance extends Model
 {
     protected $fillable = [
         'name',
+        'status',
     ];
 
     public function patientInsurances()

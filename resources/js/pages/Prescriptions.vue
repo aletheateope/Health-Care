@@ -46,7 +46,9 @@ const toggleMenu = (event, i) => {
                 <InputIcon class="pi pi-search" />
                 <InputText placeholder="Search" fluid />
             </IconField>
-            <Button label="Write Prescription" icon="pi pi-plus" />
+            <RouterLink :to="{ name: 'prescription-new' }">
+                <Button label="Write Prescription" icon="pi pi-plus" />
+            </RouterLink>
         </header>
         <DataTableContainer>
             <DataTable

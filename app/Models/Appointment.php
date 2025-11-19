@@ -17,7 +17,6 @@ class Appointment extends Model
         'chief_complaint',
         'status',
         'appointment_type',
-        'date_booked'
     ];
 
     public function patient()

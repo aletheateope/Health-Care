@@ -129,8 +129,7 @@
             </div>
             <div class="flex-1">
                 <div class="w-full h-full rounded-md overflow-hidden">
-                    <img src="https://i.ibb.co/FqBMrXK4/shutterstock-2480850611.png" alt=""
-                        class="w-full h-full object-cover">
+                    <img src="{{ asset('img/doctor.jpg') }}" alt="" class="w-full h-full object-cover">
                 </div>
             </div>
         </div>

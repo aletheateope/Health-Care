@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('staffs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('profile_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

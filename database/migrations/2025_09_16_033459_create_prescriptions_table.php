@@ -14,10 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('doctor_id')->constrained()->cascadeOnDelete();
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
-            $table->date('date_issued');
-            $table->date('valid_until');
             $table->enum('status', ['active', 'expired'])->default('active');
             $table->timestamps();
+            $table->date('valid_until');
         });
     }
 

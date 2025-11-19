@@ -15,7 +15,6 @@ return new class extends Migration {
             $table->foreignId('patient_bill_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount');
             $table->foreignId('payment_method_id')->nullable()->constrained();
-            $table->timestamp('transaction_date');
             $table->timestamps();
         });
     }
