@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('payment_method_categories_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('payment_method_category_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
         });

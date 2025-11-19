@@ -51,6 +51,15 @@ const routes = [
                     mainClass: "h-full",
                 },
             },
+            {
+                path: "prescriptions/new",
+                name: "prescription-new",
+                component: () => import("@/pages/PrescriptionCreate.vue"),
+                meta: {
+                    roles: ["doctor"],
+                    title: "New Prescription",
+                },
+            },
             // PATIENT
             {
                 path: "doctors",

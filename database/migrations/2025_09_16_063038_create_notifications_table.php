@@ -10,12 +10,6 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('notifications');
-        Schema::dropIfExists('notification_types');
-        Schema::enableForeignKeyConstraints();
-
-
         Schema::create('notification_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');

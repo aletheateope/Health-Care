@@ -10,7 +10,6 @@ class PatientBillTransaction extends Model
         'patient_bill_id',
         'amount',
         'payment_method_id',
-        'transaction_date',
     ];
 
     public function bill()

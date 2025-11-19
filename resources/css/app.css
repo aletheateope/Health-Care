@@ -171,3 +171,7 @@ thead {
 .p-dialog-content {
     padding-top: 10px !important;
 }
+
+.p-breadcrumb {
+    padding: var(--p-breadcrumb-padding) 0 !important;
+}
