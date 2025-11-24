@@ -18,7 +18,9 @@ const emit = defineEmits(["edit-btn", "cancel-btn", "save-btn"]);
 </script>
 
 <template>
-    <section class="flex flex-col rounded-md border border-color p-4 gap-4">
+    <section
+        class="flex flex-col rounded-md border border-gray-200 dark:border-gray-700 p-6 gap-4 shadow-md"
+    >
         <header class="flex flex-row justify-between">
             <h6>{{ title }}</h6>
             <Button
