@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 
 import Breadcrumb from "@/components/Breadcrumb.vue";
 import { Form, FormField } from "@primevue/forms";
@@ -15,6 +16,40 @@ const bcItems = [
     { label: "Prescriptions", route: "prescriptions" },
     { label: "New Prescription", route: "prescription-new" },
 ];
+
+const selectedPatient = ref(null);
+const patientItems = ref([]);
+
+async function searchPatients(e) {
+    const query = e.query;
+
+    if (!query) {
+        patientItems.value = [];
+        return;
+    }
+
+    try {
+        const res = await axios.get("/patients/search", {
+            params: { q: query },
+        });
+
+        patientItems.value = res.data.data;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+const debouncedSearchPatients = useDebounceFn(searchPatients, 300);
+
+const patientAge = ref(null);
+
+watch(selectedPatient, (newPatient) => {
+    if (newPatient) {
+        patientAge.value = newPatient.age;
+    } else {
+        patientAge.value = null;
+    }
+});
 
 const today = ref(new Date());
 
@@ -69,9 +104,10 @@ function onRemarkBlur(index) {
                             <FloatLabel variant="on">
                                 <AutoComplete
                                     inputId="patient-name"
-                                    v-model="value"
-                                    :suggestions="items"
-                                    @complete="search"
+                                    v-model="selectedPatient"
+                                    :suggestions="patientItems"
+                                    :optionLabel="'full_name'"
+                                    @complete="debouncedSearchPatients"
                                     fluid
                                 />
                                 <label for="patient-name">Name</label>
@@ -80,7 +116,7 @@ function onRemarkBlur(index) {
                         <FormField class="w-full sm:w-[20%]">
                             <FloatLabel variant="on">
                                 <InputNumber
-                                    v-model="value2"
+                                    v-model="patientAge"
                                     inputId="age"
                                     :useGrouping="false"
                                     fluid
@@ -114,6 +150,7 @@ function onRemarkBlur(index) {
                                     showIcon
                                     fluid
                                     iconDisplay="input"
+                                    :minDate="new Date()"
                                 />
                                 <label for="valid-until">Valid Until</label>
                             </FloatLabel>

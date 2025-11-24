@@ -9,6 +9,7 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\PatientController;
 
 Route::get('/', function () {
     return view('home');
@@ -65,6 +66,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/conversation', [ConversationController::class, 'store']);
     Route::get('/my-conversation', [ConversationController::class, 'myConversation']);
     Route::get('/conversations', [ConversationController::class, 'myConversations']);
+    Route::get('/patients/search', [PatientController::class, 'search']);
 });
 
 Route::get('/force-logout', function () {
