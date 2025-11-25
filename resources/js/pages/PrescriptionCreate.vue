@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useDebounceFn } from "@vueuse/core";
 
 import Breadcrumb from "@/components/Breadcrumb.vue";
@@ -14,6 +15,8 @@ import Section from "@/components/Section.vue";
 import ErrorMessage from "@/components/errorMessage.vue";
 
 import { useTimezoneStore } from "@/stores/timezone";
+
+const router = useRouter();
 
 const timezoneStore = useTimezoneStore();
 const timezone = timezoneStore.timezone;
@@ -122,7 +125,10 @@ async function onFormSubmit({ values }) {
 
         const res = await axios.post("/prescriptions", payload);
 
-        console.log(res.data.message);
+        router.push({ name: "prescriptions" });
+
+        const prescriptionId = res.data.prescription_id;
+        window.open(`/prescriptions/${prescriptionId}/pdf`, "_blank");
     } catch (err) {
         if (err.response?.data?.errors) {
             errors.value = err.response.data.errors;

@@ -21,7 +21,8 @@ class PrescriptionPolicy
      */
     public function view(User $user, Prescription $prescription): bool
     {
-        return false;
+        return $user->id === $prescription->doctor->user_id
+         || $user->id === $prescription->patient->user_id;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Prescription;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PrescriptionController extends Controller
 {
@@ -30,7 +31,7 @@ class PrescriptionController extends Controller
         'doctor_id' => $doctor_id,
         'patient_id' => $validated['patient_id'],
         'valid_until' => $validated['valid_until'],
-   ]);
+        ]);
 
         foreach ($validated['clinical_items'] as $item) {
             $prescription->items()->create([
@@ -49,10 +50,19 @@ class PrescriptionController extends Controller
                 }
             }
         }
-
         return response()->json([
             'message' => 'Prescription created successfully',
+            'prescription_id' => $prescription->id,
         ]);
+    }
+    public function pdf(Prescription $prescription)
+    {
+        $this->authorize('view', $prescription);
+
+        $pdf = Pdf::loadView('pdf.prescription', ['prescription' => $prescription])->setPaper('a4', 'portrait');
+
+        return $pdf->stream("prescription_{$prescription->id}.pdf");
 
     }
+
 }
