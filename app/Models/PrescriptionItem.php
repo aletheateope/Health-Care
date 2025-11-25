@@ -9,7 +9,8 @@ class PrescriptionItem extends Model
     protected $fillable = [
         'prescription_id',
         'item',
-        'amount',
+        'quantity',
+        'sig',
     ];
 
     public function prescription()

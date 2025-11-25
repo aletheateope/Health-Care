@@ -11,6 +11,15 @@ import InputNumber from "primevue/inputnumber";
 import AutoComplete from "primevue/autocomplete";
 
 import Section from "@/components/Section.vue";
+import ErrorMessage from "@/components/errorMessage.vue";
+
+import { useTimezoneStore } from "@/stores/timezone";
+
+const timezoneStore = useTimezoneStore();
+const timezone = timezoneStore.timezone;
+
+const errors = ref({});
+const loading = ref(false);
 
 const bcItems = [
     { label: "Prescriptions", route: "prescriptions" },
@@ -85,164 +94,282 @@ function onRemarkInput(index) {
 }
 
 function onRemarkBlur(index) {
-    if (remarks.value.length === 1) return; // keep at least 1
+    if (remarks.value.length === 1) return;
 
     if (remarks.value[index] === "") {
         remarks.value.splice(index, 1);
     }
+}
+
+const initialValues = ref({
+    valid_until: null,
+});
+
+async function onFormSubmit({ values }) {
+    errors.value = {};
+    loading.value = true;
+
+    try {
+        const payload = {
+            patient_id: selectedPatient.value?.id,
+            ...values,
+            clinical_items: clinicalItems.value.filter(
+                (ci) => ci.item !== "" || ci.qty !== null || ci.sig !== ""
+            ),
+            remarks: remarks.value.filter((r) => r !== ""),
+            timezone,
+        };
+
+        const res = await axios.post("/prescriptions", payload);
+
+        console.log(res.data.message);
+    } catch (err) {
+        if (err.response?.data?.errors) {
+            errors.value = err.response.data.errors;
+        } else {
+            console.error(err);
+        }
+    } finally {
+        loading.value = false;
+    }
+}
+
+function clearError(field) {
+    errors.value[field] = null;
 }
 </script>
 
 <template>
     <div class="flex flex-col gap-4">
         <Breadcrumb :items="bcItems" />
-        <div class="flex flex-col gap-8">
-            <div class="flex flex-col gap-10">
-                <Section title="Patient Information">
-                    <div class="flex flex-col sm:flex-row gap-6">
-                        <FormField class="w-full">
-                            <FloatLabel variant="on">
-                                <AutoComplete
-                                    inputId="patient-name"
-                                    v-model="selectedPatient"
-                                    :suggestions="patientItems"
-                                    :optionLabel="'full_name'"
-                                    @complete="debouncedSearchPatients"
-                                    fluid
+        <Form :initialValues="initialValues" @submit="onFormSubmit">
+            <div class="flex flex-col gap-8">
+                <div class="flex flex-col gap-10">
+                    <Section title="Patient Information">
+                        <div class="flex flex-col sm:flex-row gap-6">
+                            <FormField class="w-full">
+                                <FloatLabel variant="on">
+                                    <AutoComplete
+                                        inputId="patient-name"
+                                        v-model="selectedPatient"
+                                        :suggestions="patientItems"
+                                        :optionLabel="'full_name'"
+                                        :invalid="!!errors.patient_id"
+                                        @complete="debouncedSearchPatients"
+                                        fluid
+                                        @update:modelValue="
+                                            clearError('patient_id')
+                                        "
+                                    />
+                                    <label for="patient-name">Name</label>
+                                </FloatLabel>
+                                <ErrorMessage
+                                    :error="errors.patient_id"
+                                    message="Please select a patient."
                                 />
-                                <label for="patient-name">Name</label>
-                            </FloatLabel>
-                        </FormField>
-                        <FormField class="w-full sm:w-[20%]">
-                            <FloatLabel variant="on">
-                                <InputNumber
-                                    v-model="patientAge"
-                                    inputId="age"
-                                    :useGrouping="false"
-                                    fluid
-                                    disabled
-                                />
-                                <label for="age">Age</label>
-                            </FloatLabel>
-                        </FormField>
-                    </div>
-                </Section>
-                <Section title="Prescription Information">
-                    <div class="flex flex-col sm:flex-row gap-6">
-                        <FormField class="w-full">
-                            <FloatLabel variant="on">
-                                <DatePicker
-                                    inputId="date-issued"
-                                    v-model="today"
-                                    showIcon
-                                    fluid
-                                    disabled
-                                    iconDisplay="input"
-                                />
-                                <label for="date-issued">Date Issued</label>
-                            </FloatLabel>
-                        </FormField>
-                        <FormField class="w-full">
-                            <FloatLabel variant="on">
-                                <DatePicker
-                                    inputId="valid-until"
-                                    v-model="icondisplay"
-                                    showIcon
-                                    fluid
-                                    iconDisplay="input"
-                                    :minDate="new Date()"
-                                />
-                                <label for="valid-until">Valid Until</label>
-                            </FloatLabel>
-                        </FormField>
-                    </div>
-                </Section>
-                <Section title="Clinical Order">
-                    <div class="flex flex-col gap-8">
-                        <div class="flex flex-col gap-6">
-                            <div
-                                v-for="(ci, index) in clinicalItems"
-                                :key="index"
-                                class="flex flex-col gap-3"
+                            </FormField>
+                            <FormField class="w-full sm:w-[20%]">
+                                <FloatLabel variant="on">
+                                    <InputNumber
+                                        v-model="patientAge"
+                                        inputId="age"
+                                        :useGrouping="false"
+                                        fluid
+                                        disabled
+                                    />
+                                    <label for="age">Age</label>
+                                </FloatLabel>
+                            </FormField>
+                        </div>
+                    </Section>
+                    <Section title="Prescription Information">
+                        <div class="flex flex-col sm:flex-row gap-6">
+                            <FormField class="w-full">
+                                <FloatLabel variant="on">
+                                    <DatePicker
+                                        inputId="date-issued"
+                                        v-model="today"
+                                        showIcon
+                                        fluid
+                                        disabled
+                                        iconDisplay="input"
+                                    />
+                                    <label for="date-issued">Date Issued</label>
+                                </FloatLabel>
+                            </FormField>
+                            <FormField
+                                class="w-full"
+                                name="valid_until"
+                                v-slot="{ field }"
                             >
-                                <h6 class="text-base!">Item {{ index + 1 }}</h6>
-                                <div class="flex flex-col gap-4">
-                                    <div class="flex flex-row gap-2 sm:gap-6">
-                                        <FormField class="w-full">
+                                <FloatLabel variant="on">
+                                    <DatePicker
+                                        v-bind="field"
+                                        inputId="valid-until"
+                                        showIcon
+                                        fluid
+                                        iconDisplay="input"
+                                        :minDate="new Date()"
+                                        :invalid="!!errors.valid_until"
+                                        @update:modelValue="
+                                            clearError('valid_until')
+                                        "
+                                    />
+                                    <label for="valid-until">Valid Until</label>
+                                </FloatLabel>
+                                <ErrorMessage :error="errors.valid_until" />
+                            </FormField>
+                        </div>
+                    </Section>
+                    <Section title="Clinical Order">
+                        <div class="flex flex-col gap-8">
+                            <div class="flex flex-col gap-6">
+                                <div
+                                    v-for="(ci, index) in clinicalItems"
+                                    :key="index"
+                                    class="flex flex-col gap-3"
+                                >
+                                    <h6 class="text-base!">
+                                        Item {{ index + 1 }}
+                                    </h6>
+                                    <div class="flex flex-col gap-4">
+                                        <div
+                                            class="flex flex-row gap-2 sm:gap-6"
+                                        >
+                                            <FormField class="w-full">
+                                                <FloatLabel variant="on">
+                                                    <InputText
+                                                        :id="
+                                                            'item-' +
+                                                            (index + 1)
+                                                        "
+                                                        fluid
+                                                        v-model="ci.item"
+                                                        @input="
+                                                            onItemInput(index)
+                                                        "
+                                                        @blur="
+                                                            onItemBlur(index)
+                                                        "
+                                                        :invalid="
+                                                            !!errors[
+                                                                `clinical_items.${index}.item`
+                                                            ] ||
+                                                            !!errors.clinical_items
+                                                        "
+                                                        @update:modelValue="
+                                                            clearError(
+                                                                `clinical_items.${index}.item`
+                                                            )
+                                                        "
+                                                    />
+                                                    <label
+                                                        :for="
+                                                            'item-' +
+                                                            (index + 1)
+                                                        "
+                                                        >Item</label
+                                                    >
+                                                </FloatLabel>
+                                                <ErrorMessage
+                                                    :error="
+                                                        errors[
+                                                            `clinical_items.${index}.item`
+                                                        ]
+                                                    "
+                                                    message="Item is required."
+                                                />
+                                                <ErrorMessage
+                                                    :error="
+                                                        errors.clinical_items
+                                                    "
+                                                    message="Please add at least 1 item."
+                                                />
+                                            </FormField>
+                                            <FormField
+                                                class="w-[50%] sm:w-[30%]"
+                                            >
+                                                <FloatLabel variant="on">
+                                                    <InputNumber
+                                                        v-model="ci.qty"
+                                                        :inputId="
+                                                            'quantity-' +
+                                                            (index + 1)
+                                                        "
+                                                        :useGrouping="false"
+                                                        fluid
+                                                        @blur="
+                                                            onItemBlur(index)
+                                                        "
+                                                        :invalid="
+                                                            !!errors[
+                                                                `clinical_items.${index}.qty`
+                                                            ]
+                                                        "
+                                                        @update:modelValue="
+                                                            clearError(
+                                                                `clinical_items.${index}.qty`
+                                                            )
+                                                        "
+                                                    />
+                                                    <label
+                                                        :for="
+                                                            'quantity-' +
+                                                            (index + 1)
+                                                        "
+                                                        >Qty</label
+                                                    >
+                                                </FloatLabel>
+                                                <ErrorMessage
+                                                    :error="
+                                                        errors[
+                                                            `clinical_items.${index}.qty`
+                                                        ]
+                                                    "
+                                                    message="Quantity is required."
+                                                />
+                                            </FormField>
+                                        </div>
+                                        <FormField>
                                             <FloatLabel variant="on">
                                                 <InputText
-                                                    :id="'item-' + (index + 1)"
+                                                    :id="'sig-' + (index + 1)"
                                                     fluid
-                                                    v-model="ci.item"
-                                                    @input="onItemInput(index)"
+                                                    v-model="ci.sig"
                                                     @blur="onItemBlur(index)"
                                                 />
                                                 <label
-                                                    :for="'item-' + (index + 1)"
-                                                    >Item</label
-                                                >
-                                            </FloatLabel>
-                                        </FormField>
-                                        <FormField class="w-[50%] sm:w-[30%]">
-                                            <FloatLabel variant="on">
-                                                <InputNumber
-                                                    v-model="ci.qty"
-                                                    :inputId="
-                                                        'quantity-' +
-                                                        (index + 1)
-                                                    "
-                                                    :useGrouping="false"
-                                                    fluid
-                                                    @blur="onItemBlur(index)"
-                                                />
-                                                <label
-                                                    :for="
-                                                        'quantity-' +
-                                                        (index + 1)
-                                                    "
-                                                    >Qty</label
+                                                    :for="'sig-' + (index + 1)"
+                                                    >Sig.</label
                                                 >
                                             </FloatLabel>
                                         </FormField>
                                     </div>
-                                    <FormField>
-                                        <FloatLabel variant="on">
-                                            <InputText
-                                                :id="'sig-' + (index + 1)"
-                                                fluid
-                                                v-model="ci.sig"
-                                                @blur="onItemBlur(index)"
-                                            />
-                                            <label :for="'sig-' + (index + 1)"
-                                                >Sig.</label
-                                            >
-                                        </FloatLabel>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-3">
+                                <h6 class="text-base!">Remarks</h6>
+                                <div class="flex flex-col gap-4">
+                                    <FormField
+                                        v-for="(r, index) in remarks"
+                                        :key="index"
+                                    >
+                                        <InputText
+                                            fluid
+                                            v-model="remarks[index]"
+                                            @input="onRemarkInput(index)"
+                                            @blur="onRemarkBlur(index)"
+                                        />
                                     </FormField>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-3">
-                            <h6 class="text-base!">Remarks</h6>
-                            <div class="flex flex-col gap-4">
-                                <FormField
-                                    v-for="(r, index) in remarks"
-                                    :key="index"
-                                >
-                                    <InputText
-                                        fluid
-                                        v-model="remarks[index]"
-                                        @input="onRemarkInput(index)"
-                                        @blur="onRemarkBlur(index)"
-                                    />
-                                </FormField>
-                            </div>
-                        </div>
-                    </div>
-                </Section>
+                    </Section>
+                </div>
+                <div class="flex flex-row justify-end">
+                    <Button label="Create" type="submit" />
+                </div>
             </div>
-            <div class="flex flex-row justify-end">
-                <Button label="Create" />
-            </div>
-        </div>
+        </Form>
     </div>
 </template>

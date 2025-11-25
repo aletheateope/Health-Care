@@ -204,7 +204,7 @@ async function onSubmit() {
             time_start: selectedTimeSlot.value,
         };
 
-        const res = await axios.post("/appointment", payload);
+        const res = await axios.post("/appointments", payload);
         toast.success("Appointment created successfully.");
         addAppointmentModal.value = false;
         fetchAvailableTimeSlots();

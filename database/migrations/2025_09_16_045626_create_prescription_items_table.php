@@ -14,7 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('prescription_id')->constrained()->cascadeOnDelete();
             $table->string('item');
-            $table->string('amount');
+            $table->integer('quantity');
+            $table->string('sig')->nullable();
             $table->timestamps();
         });
     }

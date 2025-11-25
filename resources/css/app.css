@@ -174,4 +174,5 @@ thead {
 
 .p-breadcrumb {
     padding: var(--p-breadcrumb-padding) 0 !important;
+    background: none !important;
 }

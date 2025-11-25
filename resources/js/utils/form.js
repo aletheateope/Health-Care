@@ -10,3 +10,7 @@ export const userInitialValues = {
     password: "",
     password_confirmation: "",
 };
+
+export function clearError(errorsRef, field) {
+    errorsRef.value[field] = null;
+}

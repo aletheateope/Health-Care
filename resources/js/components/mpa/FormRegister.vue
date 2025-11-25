@@ -16,7 +16,7 @@ import Password from "primevue/password";
 import InputMask from "primevue/inputmask";
 import DatePicker from "primevue/datepicker";
 
-import { userInitialValues } from "@/utils/form-initial-values";
+import { userInitialValues } from "@/utils/form";
 
 // const schema = yup.object({
 //     email: yup.string().email("Please enter a valid email address."),

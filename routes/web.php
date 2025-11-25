@@ -1,15 +1,16 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ConversationController;
-use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PrescriptionController;
 
 Route::get('/', function () {
     return view('home');
@@ -59,7 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/doctor/schedule', [ScheduleController::class, 'store']);
     Route::get('/doctor/schedule', [ScheduleController::class, 'mySchedule']);
     Route::put('/doctor/profile', [DoctorController::class, 'update']);
-    Route::post('/appointment', [AppointmentController::class, 'store']);
+    Route::post('/appointments', [AppointmentController::class, 'store']);
     Route::get('/appointments', [AppointmentController::class, 'myAppointments']);
     Route::get('/available-time-slots', [AppointmentController::class, 'getAvailableTimes']);
     Route::get('/conversation', [ConversationController::class, 'findConversation']);
@@ -67,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/my-conversation', [ConversationController::class, 'myConversation']);
     Route::get('/conversations', [ConversationController::class, 'myConversations']);
     Route::get('/patients/search', [PatientController::class, 'search']);
+    Route::post('/prescriptions', [PrescriptionController::class, 'store']);
 });
 
 Route::get('/force-logout', function () {

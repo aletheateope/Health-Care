@@ -24,7 +24,7 @@ import Select from "primevue/select";
 import Checkbox from "primevue/checkbox";
 import CheckboxGroup from "primevue/checkboxgroup";
 
-import { userInitialValues } from "@/utils/form-initial-values";
+import { userInitialValues } from "@/utils/form";
 import { useAppToast } from "@/utils/toast";
 import { useTimezoneStore } from "@/stores/timezone";
 
