@@ -15,13 +15,14 @@ import Section from "@/components/Section.vue";
 import ErrorMessage from "@/components/errorMessage.vue";
 
 import { useTimezoneStore } from "@/stores/timezone";
+import { useFormErrors } from "@/utils/form";
 
 const router = useRouter();
 
 const timezoneStore = useTimezoneStore();
 const timezone = timezoneStore.timezone;
 
-const errors = ref({});
+const { errors, clearError } = useFormErrors();
 const loading = ref(false);
 
 const bcItems = [
@@ -127,8 +128,8 @@ async function onFormSubmit({ values }) {
 
         router.push({ name: "prescriptions" });
 
-        const prescriptionId = res.data.prescription_id;
-        window.open(`/prescriptions/${prescriptionId}/pdf`, "_blank");
+        const ref_id = res.data.ref_id;
+        window.open(`/prescriptions/${ref_id}/pdf`, "_blank");
     } catch (err) {
         if (err.response?.data?.errors) {
             errors.value = err.response.data.errors;
@@ -138,10 +139,6 @@ async function onFormSubmit({ values }) {
     } finally {
         loading.value = false;
     }
-}
-
-function clearError(field) {
-    errors.value[field] = null;
 }
 </script>
 

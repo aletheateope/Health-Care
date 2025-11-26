@@ -53,10 +53,10 @@ Route::middleware(['auth'])->prefix('portal')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/users', [UserController::class, 'index']);
     Route::get('/user', [UserController::class, 'currentUser']);
-    Route::post('/user', [UserController::class, 'store']);
-    Route::delete('/user/{user}', [UserController::class, 'destroy']);
+    Route::get('/users', [UserController::class, 'index']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::delete('/users/{user}', [UserController::class, 'destroy']);
     Route::post('/doctor/schedule', [ScheduleController::class, 'store']);
     Route::get('/doctor/schedule', [ScheduleController::class, 'mySchedule']);
     Route::put('/doctor/profile', [DoctorController::class, 'update']);

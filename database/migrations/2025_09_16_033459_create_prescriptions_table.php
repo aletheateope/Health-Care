@@ -12,6 +12,7 @@ return new class extends Migration {
     {
         Schema::create('prescriptions', function (Blueprint $table) {
             $table->id();
+            $table->string('ref_id');
             $table->foreignId('doctor_id')->constrained()->cascadeOnDelete();
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
             $table->enum('status', ['active', 'expired'])->default('active');

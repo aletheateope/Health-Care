@@ -64,7 +64,7 @@ async function onSubmit({ values }) {
             timezone,
         };
 
-        const response = await axios.post("/user", payload);
+        const response = await axios.post("/users", payload);
         toast.success("User added successfully.");
         addUserModal.value = false;
 
@@ -129,7 +129,7 @@ function deleteUser(user) {
         acceptClass: "p-button-danger",
         accept: async () => {
             try {
-                await axios.delete(`/user/${user.id}`);
+                await axios.delete(`/users/${user.id}`);
                 users.value = users.value.filter((u) => u.id !== user.id);
                 toast.success("User deleted successfully.");
             } catch (error) {

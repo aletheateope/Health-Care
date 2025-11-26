@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Prescription extends Model
 {
     protected $fillable = [
+        'ref_id',
         'doctor_id',
         'patient_id',
         'status',
@@ -31,5 +32,10 @@ class Prescription extends Model
     public function remarks()
     {
         return $this->hasMany(PrescriptionRemark::class);
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'ref_id';
     }
 }
