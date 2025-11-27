@@ -19,9 +19,9 @@ import DataTableContainer from "@/components/DataTableContainer.vue";
 
 import { formatDate } from "@/utils/date";
 import { useAppToast } from "@/utils/toast";
+import { usePaginatedData } from "@/utils/datatable";
 
 const toast = useAppToast();
-const loading = ref(false);
 
 const appointmentTypes = ref("upcoming");
 
@@ -31,35 +31,14 @@ const tabItems = [
     { label: "History", value: "history" },
 ];
 
-const appointments = ref({ data: [], total: 0 });
-const rows = ref(20);
-const currentPage = ref(0);
-
-async function fetchMyAppointments(page = 0, perPage = 10) {
-    loading.value = true;
-    try {
-        const response = await axios.get("/appointments", {
-            params: { page: page + 1, per_page: perPage },
-        });
-        appointments.value.data = response.data.data;
-        appointments.value.total = response.data.meta.total;
-        console.log(response.data);
-    } catch (err) {
-        console.log(err);
-    } finally {
-        loading.value = false;
-    }
-}
-
-function onPage(event) {
-    currentPage.value = event.page;
-    rows.value = event.rows;
-    fetchMyAppointments(event.page, event.rows);
-}
-
-onMounted(() => {
-    fetchMyAppointments(currentPage.value, rows.value);
-});
+const {
+    data: appointments,
+    total,
+    rows,
+    currentPage,
+    loading,
+    onPage,
+} = usePaginatedData("/appointments", 20);
 
 const menu = ref();
 
@@ -261,8 +240,8 @@ async function onSubmit() {
         </div>
         <DataTableContainer>
             <DataTable
-                :value="appointments.data"
-                :totalRecords="appointments.total"
+                :value="appointments"
+                :totalRecords="total"
                 paginator
                 :rows="rows"
                 :lazy="true"
@@ -328,7 +307,7 @@ async function onSubmit() {
                                 @click="(e) => toggleMenu(e, index)"
                             />
                             <TieredMenu
-                                v-for="(appointment, i) in appointments.data"
+                                v-for="(appointment, i) in appointments"
                                 :key="i"
                                 ref="menu"
                                 id="more"
