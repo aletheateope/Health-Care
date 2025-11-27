@@ -63,8 +63,10 @@ class PrescriptionController extends Controller
     {
         $this->authorize('view', $prescription);
 
-        $pdf = Pdf::loadView('pdf.prescription', ['prescription' => $prescription])->setPaper('letter', 'portrait');
-
+        $pdf = Pdf::loadView('pdf.prescription', ['prescription' => $prescription])
+        ->setOption('isPhpEnabled', true)
+        ->setOption('isHtml5ParserEnabled', true)
+        ->setPaper('letter', 'portrait');
         return $pdf->stream("prescription_{$prescription->ref_id}.pdf");
 
     }
