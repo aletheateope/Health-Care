@@ -8,22 +8,20 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
 
-import DataTableContainer from "@/components/DataTableContainer.vue";
+import DataTableContainer from "@/components/datatable/Container.vue";
+import PaginatedDatatable from "@/components/datatable/PaginatedDatatable.vue";
 
-const prescriptions = ref([
-    {
-        patientName: "test",
-        date: "test",
-        validUntil: "test",
-        prescribed: "test",
-    },
-    {
-        patientName: "test",
-        date: "test",
-        validUntil: "test",
-        prescribed: "test",
-    },
-]);
+import { usePaginatedData } from "@/utils/datatable";
+
+const {
+    data: prescriptions,
+    total,
+    rows,
+    currentPage,
+    loading,
+    onPage,
+    fetchData,
+} = usePaginatedData("/my-prescriptions", 20);
 
 const menu = ref([]);
 
@@ -51,17 +49,36 @@ const toggleMenu = (event, i) => {
             </RouterLink>
         </header>
         <DataTableContainer>
-            <DataTable
+            <PaginatedDatatable
                 :value="prescriptions"
-                scrollable
-                tableStyle="min-width: 50rem border"
-                scrollHeight="100%"
-                class="flex-grow h-0"
+                :totalRecords="total"
+                :rows="rows"
+                :page="onPage"
             >
-                <Column field="patientName" header="Patient Name"></Column>
-                <Column field="date" header="Date"></Column>
-                <Column field="validUntil" header="Valid Until"></Column>
-                <Column field="prescribed" header="Prescribed"></Column>
+                <Column field="patientName" header="Patient Name">
+                    <template #body="{ data }">
+                        {{ data.patient_name }}
+                    </template>
+                </Column>
+                <Column field="date" header="Date">
+                    <template #body="{ data }">
+                        {{ data.date_issued }}
+                    </template>
+                </Column>
+                <Column field="validUntil" header="Valid Until">
+                    <template #body="{ data }">
+                        {{ data.valid_until }}
+                    </template>
+                </Column>
+                <Column field="prescribed" header="Prescribed">
+                    <template #body="{ data }">
+                        <ul>
+                            <li v-for="item in data.items" :key="item.id">
+                                {{ item.item }}
+                            </li>
+                        </ul>
+                    </template>
+                </Column>
                 <Column class="w-30">
                     <template #header>
                         <div
@@ -93,7 +110,7 @@ const toggleMenu = (event, i) => {
                         </div>
                     </template>
                 </Column>
-            </DataTable>
+            </PaginatedDatatable>
         </DataTableContainer>
     </section>
 </template>

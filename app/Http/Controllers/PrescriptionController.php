@@ -2,14 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Prescription;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Hidehalo\Nanoid\Client;
 
-use App\Models\Prescription;
+use App\Http\Resources\PrescriptionResource;
 
 class PrescriptionController extends Controller
 {
+    public function myPrescriptions(Request $request)
+    {
+        $user = $request->user();
+
+        $prescriptionQuery = Prescription::query();
+        
+        $prescriptionQuery->where(function ($query) use ($user) {
+            if ($user->profile->patient) {
+                $query->where('patient_id', $user->profile->patient->id);
+            }
+            if ($user->profile->doctor) {
+                $query->orWhere('doctor_id', $user->profile->doctor->id);
+            }
+        });
+
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+        
+        $prescriptions = $prescriptionQuery
+        ->with(['items', 'remarks'])
+        ->orderBy('created_at', 'desc')
+        ->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'data' => PrescriptionResource::collection($prescriptions),
+            'meta' => [
+                'total' => $prescriptions->total(),
+                'current_page' => $prescriptions->currentPage(),
+                'per_page' => $prescriptions->perPage(),
+                'last_page' => $prescriptions->lastPage(),
+            ]
+        ]);
+    }
+
     public function store(Request $request)
     {
         $this->authorize('create', Prescription::class);

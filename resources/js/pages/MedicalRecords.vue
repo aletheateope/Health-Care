@@ -6,7 +6,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
 
-import DataTableContainer from "@/components/DataTableContainer.vue";
+import DataTableContainer from "@/components/datatable/Container.vue";
 
 const medRecordType = ref("1");
 

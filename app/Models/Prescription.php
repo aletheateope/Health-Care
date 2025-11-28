@@ -14,6 +14,10 @@ class Prescription extends Model
         'valid_until',
     ];
 
+    protected $casts = [
+    'valid_until' => 'datetime',
+    ];
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);

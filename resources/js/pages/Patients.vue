@@ -8,7 +8,7 @@ import InputText from "primevue/inputtext";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 
-import DataTableContainer from "@/components/DataTableContainer.vue";
+import DataTableContainer from "@/components/datatable/Container.vue";
 
 import { useAuthStore } from "@/stores/auth";
 

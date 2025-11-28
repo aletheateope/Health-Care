@@ -69,6 +69,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/conversations', [ConversationController::class, 'myConversations']);
     Route::get('/patients/search', [PatientController::class, 'search']);
     Route::post('/prescriptions', [PrescriptionController::class, 'store']);
+    Route::get('/my-prescriptions', [PrescriptionController::class, 'myPrescriptions']);
     Route::get('/prescriptions/{prescription}/pdf', [PrescriptionController::class, 'pdf']);
 });
 

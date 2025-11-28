@@ -3,11 +3,9 @@ import { ref, onMounted, computed, watch } from "vue";
 
 import SelectButton from "primevue/selectbutton";
 import Dialog from "primevue/dialog";
-import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import TieredMenu from "primevue/tieredmenu";
 import Skeleton from "primevue/skeleton";
-
 import { Form, FormField } from "@primevue/forms";
 import FloatLabel from "primevue/floatlabel";
 import DatePicker from "primevue/datepicker";
@@ -15,7 +13,8 @@ import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import AutoComplete from "primevue/autocomplete";
 
-import DataTableContainer from "@/components/DataTableContainer.vue";
+import DataTableContainer from "@/components/datatable/Container.vue";
+import PaginatedDatatable from "@/components/datatable/PaginatedDatatable.vue";
 
 import { formatDate } from "@/utils/date";
 import { useAppToast } from "@/utils/toast";
@@ -38,6 +37,7 @@ const {
     currentPage,
     loading,
     onPage,
+    fetchData,
 } = usePaginatedData("/appointments", 20);
 
 const menu = ref();
@@ -187,7 +187,7 @@ async function onSubmit() {
         toast.success("Appointment created successfully.");
         addAppointmentModal.value = false;
         fetchAvailableTimeSlots();
-        fetchMyAppointments();
+        fetchData(currentPage.value, rows.value);
     } catch (err) {
         console.log(err);
         console.error(err.response?.data || err);
@@ -239,25 +239,12 @@ async function onSubmit() {
             />
         </div>
         <DataTableContainer>
-            <DataTable
+            <PaginatedDatatable
                 :value="appointments"
                 :totalRecords="total"
-                paginator
                 :rows="rows"
-                :lazy="true"
-                @page="onPage"
-                tableStyle="width: 100%"
-                scrollHeight="100%"
-                class="flex! flex-col flex-grow h-0"
-                :pt="{
-                    tableContainer: {
-                        class: 'flex-grow',
-                    },
-                }"
+                :page="onPage"
             >
-                <template #empty>
-                    <div class="text-center">No appointments found.</div>
-                </template>
                 <Column field="dateTime" header="Date and Time">
                     <template #body="{ data }">
                         {{ data.start_date }}
@@ -318,7 +305,7 @@ async function onSubmit() {
                         </div>
                     </template>
                 </Column>
-            </DataTable>
+            </PaginatedDatatable>
         </DataTableContainer>
     </section>
     <Dialog
